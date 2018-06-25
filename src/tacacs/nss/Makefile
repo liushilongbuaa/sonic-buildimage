@@ -12,8 +12,14 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 	git checkout -b test -f 19008ab
 
 	# Apply patch
-	stg init
-	stg import -s ../patch/series
+	git $(GIT_APPLY) ../0001-Modify-user-map-profile.patch
+	git $(GIT_APPLY) ../0002-Enable-modifying-local-user-permission.patch
+	git $(GIT_APPLY) ../0003-management-vrf-support.patch
+	git $(GIT_APPLY) ../0004-Skip-accessing-tacacs-servers-for-local-non-tacacs-u.patch
+	git $(GIT_APPLY) ../0005-libnss-Modify-parsing-of-IP-addr-and-port-number-str.patch
+	git $(GIT_APPLY) ../0006-fix-compiling-warning-about-token-dereference.patch
+	git $(GIT_APPLY) ../0007-Add-support-for-TACACS-source-address.patch
+	git $(GIT_APPLY) ../I001-Add-private-DeviceType-attribute.patch
 
 	dpkg-buildpackage -rfakeroot -b -us -uc -j$(SONIC_CONFIG_MAKE_JOBS) --admindir $(SONIC_DPKG_ADMINDIR)
 	popd
