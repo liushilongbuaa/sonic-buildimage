@@ -85,3 +85,6 @@
 [submodule "src/sonic-mgmt-common"]
 	path = src/sonic-mgmt-common
 	url = https://github.com/Azure/sonic-mgmt-common.git
+[submodule "platform/broadcom/Networking-acs-platform-modules-n3132"]
+	path = platform/broadcom/Networking-acs-platform-modules-n3132
+	url = https://msazure.visualstudio.com/One/_git/Networking-acs-platform-modules-n3132
