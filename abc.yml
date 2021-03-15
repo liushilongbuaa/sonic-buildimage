@@ -1,0 +1,9 @@
+pool: 
+  vmImage: ubuntu-20.04
+jobs:
+- job:
+  steps:
+  - script: |
+      A="hello"
+  - script: |
+      echo $A
