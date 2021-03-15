@@ -6,4 +6,5 @@ jobs:
   - script: |
       A="hello"
   - script: |
-      echo $A
+      B="haha"
+      echo $A$B
