@@ -1,10 +1,17 @@
 pool: 
   vmImage: ubuntu-20.04
-jobs:
-- job:
-  steps:
+variables:
+- name: one
+  value: initialValue 
+
+steps:
   - script: |
-      A="hello"
+      echo ${{ variables.one }} # outputs initialValue
+      echo $(one)
+    displayName: First variable pass
+  - bash: one=secondValue
+    displayName: Set new variable value
   - script: |
-      B="haha"
-      echo $A$B
+      echo ${{ variables.one }} # outputs initialValue
+      echo $(one) # outputs secondValue
+    displayName: Second variable pass
