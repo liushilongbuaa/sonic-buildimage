@@ -32,23 +32,16 @@ stages:
         set -xe
         make configure PLATFORM=generic
         make target/docker-sonic-mgmt.gz
+        docker load -i target/docker-sonic-mgmt.gz
       displayName: Build docker-sonic-mgmt.gz
-    - script: |
-        set -xe
-        ID=`id -un`
-        sudo mkdir /home/$ID/.docker -p
-        sudo chown -R $ID:$ID /home/$ID
-        bash .azure-pipelines/scripts/docker-upload.sh
-        rm /home/$ID/.docker/config.json || true
-      displayName: Upload docker
-      env:
-        DOCKER_IMAGE_FILE: 'docker-sonic-mgmt.gz'
-        DOCKER_IMAGE_TAG: 'latest'
-        DOCKER_IMAGE_FILE_DIR: 'target'
-        BUILD_NUMBER: $(Build.BuildNumber)
-        REGISTRY_USERNAME: $(sonicdev-user)
-        REGISTRY_PASSWD: $(sonicdev-password)
-        REGISTRY_SERVER: 'sonicdev-microsoft.azurecr.io'
-        REGISTRY_PORT: 443
+    - task: Docker@2
+      displayName: push to registry
+      inputs:
+        containerRegistry: 'soniccr2'
+        command: 'push'
+        container: docker-sonic-mgmt
+        tags: |
+          docker-sonic-mgmt:latest
+        addPipelineData: false
     - publish: target
       artifact: DockerSonicMgmt
