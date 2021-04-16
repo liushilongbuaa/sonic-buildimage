@@ -19,7 +19,7 @@ pool: sonicbld
 stages:
 - stage: Build
   variables:
-    CACHE_MODE: none
+    CACHE_MODE: rcache 
     VERSION_CONTROL_OPTIONS: 'SONIC_VERSION_CONTROL_COMPONENTS='
   jobs:
   - template: azure-pipelines-build.yml
