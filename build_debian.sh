@@ -300,7 +300,6 @@ sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y in
     squashfs-tools          \
     grub2-common            \
     rsyslog                 \
-    ethtool                 \
     screen                  \
     hping3                  \
     tcptraceroute           \
@@ -350,6 +349,7 @@ sudo LANG=C chroot $FILESYSTEM_ROOT bash -c "find /usr/share/i18n/locales/ ! -na
 # more up-to-date (but potentially less stable) versions
 sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y -t $IMAGE_DISTRO-backports install \
     picocom \
+    systemd \
     systemd-sysv
 
 if [[ $CONFIGURED_ARCH == amd64 ]]; then
