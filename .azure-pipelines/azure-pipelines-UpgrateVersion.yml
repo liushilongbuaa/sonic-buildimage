@@ -24,6 +24,9 @@ stages:
   jobs:
   - template: azure-pipelines-build.yml
     parameters:
+      jobFilters:
+      - vs
+      - broadcom
       buildOptions: '${{ variables.VERSION_CONTROL_OPTIONS }} SONIC_BUILD_JOBS=$(nproc) ENABLE_IMAGE_SIGNATURE=y'
       preSteps:
       - script: |
