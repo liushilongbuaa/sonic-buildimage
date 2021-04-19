@@ -12,12 +12,10 @@ parameters:
 - name: registry_server
   default: soniccr2
 
-pool:
-  vmImage: ubuntu-20.04
-
-
 jobs:
 - job: Build_${{ parameters.distro }}_${{ parameters.arch }}
+  pool:
+    vmImage: ubuntu-20.04
   timeoutInMinutes: 360
   steps:
   - template: cleanup.yml
