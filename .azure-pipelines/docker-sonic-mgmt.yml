@@ -18,11 +18,13 @@ parameters:
 - name: registry_server
   default: soniccr2
 
+pool:
+  vmImage: ubuntu-20.04
+
 stages:
 - stage: Build
   jobs:
   - job: Build
-    pool: sonicbld
     timeoutInMinutes: 360
     steps:
     - template: ./template/cleanup.yml
@@ -31,6 +33,7 @@ stages:
       submodules: recursive
     - bash: |
         set -xe
+        sudo apt install j2cli
         make configure PLATFORM=generic
         make target/docker-sonic-mgmt.gz
         docker load -i target/docker-sonic-mgmt.gz

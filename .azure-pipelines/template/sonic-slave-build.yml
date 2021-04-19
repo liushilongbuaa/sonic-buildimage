@@ -12,7 +12,9 @@ parameters:
 - name: registry_server
   default: soniccr2
 
-pool: sonicbld
+pool:
+  vmImage: ubuntu-20.04
+
 
 jobs:
 - job: Build_${{ parameters.distro }}_${{ parameters.arch }}
@@ -23,6 +25,7 @@ jobs:
     clean: true
   - bash: |
       set -ex
+      sudo apt install j2cli
 
       SLAVE_DIR=sonic-slave-${{ parameters.distro }}
       if [ x${{ parameters.arch }} == x"amd64" ]; then
