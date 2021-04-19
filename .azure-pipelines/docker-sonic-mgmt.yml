@@ -33,7 +33,7 @@ stages:
       submodules: recursive
     - bash: |
         set -xe
- 
+        sudo pip install j2cli
         make configure PLATFORM=generic
         make target/docker-sonic-mgmt.gz
         docker load -i target/docker-sonic-mgmt.gz
