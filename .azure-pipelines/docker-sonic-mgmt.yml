@@ -38,8 +38,9 @@ stages:
       displayName: Init ENV
     - bash: |
         set -xe
+        df -h
         make configure PLATFORM=generic
-        make target/docker-sonic-mgmt.gz
+        make target/docker-sonic-mgmt.gz || df -h
         docker load -i target/docker-sonic-mgmt.gz
         docker tag docker-sonic-mgmt $REGISTRY_SERVER/docker-sonic-mgmt:latest
       env:
