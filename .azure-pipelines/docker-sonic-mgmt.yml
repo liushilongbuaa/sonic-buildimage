@@ -34,6 +34,10 @@ stages:
     - bash: |
         set -xe
         sudo pip install j2cli
+        sudo gpasswd -a $(id -un) docker
+      displayName: Init ENV
+    - bash: |
+        set -xe
         make configure PLATFORM=generic
         make target/docker-sonic-mgmt.gz
         docker load -i target/docker-sonic-mgmt.gz
