@@ -27,6 +27,9 @@ stages:
       jobFilters:
       - vs
       - broadcom
+      - barefoot
+      - centec
+      - generic
       buildOptions: '${{ variables.VERSION_CONTROL_OPTIONS }} SONIC_BUILD_JOBS=$(nproc) ENABLE_IMAGE_SIGNATURE=y'
       preSteps:
       - script: |
