@@ -25,7 +25,11 @@ jobs:
     clean: true
   - bash: |
       set -ex
-      sudo apt install j2cli
+      sudo pip install j2cli
+      sudo gpasswd -a $(id -un) docker
+    displayName: Init ENV
+  - bash: |
+      set -ex
 
       SLAVE_DIR=sonic-slave-${{ parameters.distro }}
       if [ x${{ parameters.arch }} == x"amd64" ]; then
