@@ -31,6 +31,8 @@ stages:
         parameters:
           arch: ${{ arch }}
           distro: buster
+        pool:
+          vmImage: ubuntu-20.04
     - ${{ if endswith(variables['Build.DefinitionName'], 'stretch') }}:
       - template: template/sonic-slave-build.yml
         parameters:
