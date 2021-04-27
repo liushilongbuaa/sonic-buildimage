@@ -22,7 +22,8 @@ stages:
 - stage: Build
   jobs:
   - job: Build
-    pool: sonicbld
+    pool:
+      vmImage: ubuntu-18.04
     timeoutInMinutes: 360
     steps:
     - template: ./template/cleanup.yml
