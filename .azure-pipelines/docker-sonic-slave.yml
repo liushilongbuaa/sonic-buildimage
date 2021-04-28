@@ -51,7 +51,6 @@ stages:
           - template: cleanup.yml
           - checkout: self
             clean: true
-            submodules: recursive
           - bash: |
               set -ex
 
@@ -71,6 +70,8 @@ stages:
               else
                 SLAVE_BASE_IMAGE=${SLAVE_DIR}-march-${{ arch }}
               fi
+              echo SLAVE_BASE_IMAGE $SLAVE_BASE_IMAGE
+              exit 1
 
               tmpfile=$(mktemp)
 
