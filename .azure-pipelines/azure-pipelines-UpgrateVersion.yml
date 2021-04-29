@@ -16,6 +16,18 @@ schedules:
 
 pool: sonicbld
 
+parameters:
+  - name: jobFilters
+    type: object
+    default:
+    - vs
+    - broadcom
+    - centec
+    - generic
+    - innovium
+    - mellanox
+    - nephos
+
 stages:
 - stage: Build
   variables:
@@ -25,6 +37,7 @@ stages:
   - template: azure-pipelines-build.yml
     parameters:
       buildOptions: '${{ variables.VERSION_CONTROL_OPTIONS }} SONIC_BUILD_JOBS=$(nproc) ENABLE_IMAGE_SIGNATURE=y'
+      jobFilters: ${{ parameters.jobFilters }}
       preSteps:
       - script: |
           containers=$(docker container ls | grep "sonic-slave" | awk '{ print $1 }')
@@ -60,14 +73,14 @@ stages:
         default_platform=broadcom
         artifacts=$(find $(Pipeline.Workspace) -maxdepth 1 -type d -name 'sonic-buildimage.*' | grep -v "sonic-buildimage.${default_platform}")
         echo "artifacts$artifacts"
-        cp -r $(Pipeline.Workspace)/sonic-buildimage.${default_platform}/versions target/
+        cp -r $(Pipeline.Workspace)/sonic-buildimage.${default_platform}/target/versions target/
         make freeze FREEZE_VERSION_OPTIONS=-r
         find files/build/versions 
         ordered_artifacts=$(echo "$artifacts" | grep -v -E "arm64|armhf" && echo "$artifacts" | grep -E "arm64|armhf")
         for artifact in $ordered_artifacts
         do
           rm -rf target/versions
-          cp -r $artifact/versions target/
+          cp -r $artifact/target/versions target/
           OPTIONS="-a -d"
           [[ "$artifact" == *arm64* || "$artifact" == *armhf* ]] && OPTIONS="-d"
           make freeze FREEZE_VERSION_OPTIONS="$OPTIONS"
