@@ -10,6 +10,8 @@ schedules:
     include:
     - master
     - 202012
+    - 201911
+    - 201811
   always: true
 
 trigger: none
