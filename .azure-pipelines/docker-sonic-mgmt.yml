@@ -4,13 +4,6 @@
 # https://aka.ms/yaml
 # Build and push sonic-mgmt image
 
-schedules:
-- cron: "0 8 * * *"
-  branches:
-    include:
-    - master
-  always: true
-
 trigger: none
 pr:
   branches:
@@ -23,7 +16,7 @@ pr:
 parameters:
 - name: registry_url
   type: string
-  default: sonicdev-microsoft.azurecr.io
+  default: soniccr2.azurecr.io
 - name: registry_conn
   type: string
   default: sonicdev
@@ -32,7 +25,7 @@ stages:
 - stage: Build
   jobs:
   - job: Build
-    pool: sonicbld
+    pool: sonictest
     timeoutInMinutes: 360
     steps:
     - template: cleanup.yml
