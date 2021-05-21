@@ -19,7 +19,7 @@ parameters:
   default: soniccr2.azurecr.io
 - name: registry_conn
   type: string
-  default: sonicdev
+  default: soniccr2
 
 stages:
 - stage: Build
