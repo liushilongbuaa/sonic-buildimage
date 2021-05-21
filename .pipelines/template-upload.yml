@@ -1,0 +1,69 @@
+steps:
+- script: |
+    for image in `ls target | grep -E "\.(swi|bin|raw|deb)$"`; do
+      version_image=$(echo $image | sed -E "s/(-dbg\.\w+|\.\w+)$/-$(SONIC_VERSION)\1/")
+      echo "$image,$version_image" >> target/sonic-installers 
+      cp -f target/$image target/$version_image
+    done
+  displayName: "Copy installers"
+- script: |
+    mkdir -p azcopy
+    pushd azcopy
+    wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1
+    popd
+    export AZCOPY_LOG_LOCATION=$(pwd)/azcopy
+    PUBLISH_PLATFORM_URL="https://$(SONIC_STORAGE_ACCOUNT).blob.core.windows.net/images/$(PUBLISH_BLOB_PREFIX)/$GROUP_NAME"
+    azcopy/azcopy copy target "$PUBLISH_PLATFORM_URL/$(Build.BuildId)$StorageSASKey" --recursive=true --put-md5
+    touch prev_build
+    azcopy/azcopy copy "$PUBLISH_PLATFORM_URL/latest_build$StorageSASKey" latest_build || true
+    [ -f latest_build ] && mv latest_build prev_build
+    echo $(Build.BuildId) > latest_build
+    azcopy/azcopy copy latest_build "$PUBLISH_PLATFORM_URL/latest_build$StorageSASKey"  --put-md5
+    azcopy/azcopy copy prev_build "$PUBLISH_PLATFORM_URL/prev_build$StorageSASKey"  --put-md5
+  env:
+    StorageSASKey: $(SONIC_STORAGE_SASKEY)
+  displayName: "Publish to Azure Storage"
+- task: SSH@0
+  displayName: "Make soft links for trusty8"
+  inputs:
+    sshEndpoint: 'acs-trusty8'
+    runOptions: 'inline'
+    readyTimeout: '20000'
+    inline: |
+      echo "Make link for $(PUBLISH_BLOB_PREFIX)"
+      LINK_FOLDERNAMES=.
+      [ "$(SONIC_VERSION)" == "$(LATEST_TAG)" ] && LINK_FOLDERNAMES=". tagged"
+      for link_foldername in $LINK_FOLDERNAMES; do
+        latest_path=/azmirrors/$(PUBLISH_BLOB_PREFIX)/$(GROUP_NAME)/$(Build.BuildId)
+        link_path=/data/$(dirname $(PUBLISH_BLOB_PREFIX))/$(GROUP_NAME)/$(Build.SourceBranchName)/$link_foldername
+        mkdir -p $link_path
+        
+        # Make soft links for latest and prev
+        prev_link_path=$(realpath $link_path/latest)
+        [ -e $prev_link_path ] && ln -nsf "$prev_link_path" "$link_path/prev"
+        ln -nsf "$latest_path" "$link_path/latest"
+
+        # Make soft links for installers
+        installers_path=$link_path/installers
+        mkdir -p $installers_path
+        ln -sf $latest_path/target/sonic.version $installers_path/sonic.version
+        for installer in `cat $latest_path/target/sonic-installers`; do
+          image=$(echo $installer | cut -d, -f1)
+          version_image=$(echo $installer | cut -d, -f2)
+          ln -sf $latest_path/target/$version_image $installers_path/$image
+        done
+      done
+- script: |
+    PORT=443
+    DOCKERS=$(ls target/docker-*.gz)
+    BRANCH=$(Build.SourceBranchName)
+    for f in $DOCKERS; do
+      echo $f
+      ./push_docker.sh $f $REGISTRY_SERVER $PORT $REGISTRY_USERNAME "$REGISTRY_PASSWD" $SONIC_VERSION $BRANCH
+      ./push_docker.sh $f $REGISTRY_SERVER $PORT $REGISTRY_USERNAME "$REGISTRY_PASSWD" latest $BRANCH
+    done
+  env:
+    REGISTRY_PASSWD: $(REGISTRY_PASSWD)
+    BUILD_NUMBER: $(Build.BuildId)
+  displayName: "Publish to Docker Registry"
+- task: ComponentGovernanceComponentDetection@0

@@ -1,0 +1,79 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+schedules:
+- cron: "0 8 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - internal
+    - internal-202012
+    - internal-201811
+    - internal-201911
+
+trigger: none
+pr: none
+
+stages:
+- stage: Build
+  pool: sonic-image-builder
+  variables:
+    - group: SONIC-BUILD-VG-1
+    - name: PUBLISH_BLOB_PREFIX
+      value: pipelines/$(Build.DefinitionName)/$(Build.SourceBranchName)
+    - name: CACHE_MODE
+      value: none
+    - ${{ if contains(variables['Build.SourceBranchName'], '202012') }}:
+      - name: VERSION_CONTROL_OPTIONS
+        value: 'SONIC_VERSION_CONTROL_COMPONENTS=deb,py2,py3,web'
+  jobs:
+  - template: ../.azure-pipelines/azure-pipelines-build.yml
+    parameters:
+      buildOptions: 'ENABLE_DHCP_GRAPH_SERVICE=y PASSWORD=$SONIC_PASSWORD SHUTDOWN_BGP_ON_START=y ENABLE_PFCWD_ON_START=y SONIC_BUILD_JOBS=$(nproc) ${{ variables.VERSION_CONTROL_OPTIONS }}'
+      jobFilters: none
+      preSteps:
+        - script: |
+            set -xe
+            . functions.sh
+            SONIC_VERSION=$(sonic_get_version)
+            LATEST_TAG=$(git describe --tags --abbrev=0)
+            set +x
+            echo "##vso[task.setvariable variable=SONIC_VERSION]$SONIC_VERSION"
+            echo "##vso[task.setvariable variable=LATEST_TAG]$LATEST_TAG"
+          displayName: Get sonic version
+      postSteps:
+        - script: |
+            set -x
+            mv target/sonic-$(GROUP_NAME).bin target/sonic-$(GROUP_NAME)-$SONIC_VERSION.bin
+            mv target/sonic-$(GROUP_NAME).raw target/sonic-$(GROUP_NAME)-$SONIC_VERSION.raw
+            mv target/sonic-$(GROUP_NAME)-dbg.bin target/sonic-broadcom-$SONIC_VERSION-dbg.bin
+            mv target/sonic-aboot-$(GROUP_NAME).swi target/sonic-aboot-$(GROUP_NAME)-$SONIC_VERSION.swi
+            mv target/debs/buster/python-saithrift_0.9.4_amd64.deb target/python-saithrift_0.9.4_amd64-$SONIC_VERSION.deb
+            exit 0
+          displayName: Change artifacts name
+        - template: template-upload.yml
+      jobGroups:
+        - name: vs
+          variables:
+            dbg_image: yes
+
+        - name: barefoot
+          variables:
+            swi_image: yes
+            sync_rpc_image: yes
+            platform_rpc: bfn
+
+        - name: broadcom
+          variables:
+            swi_image: yes
+            raw_image: yes
+            sync_rpc_image: yes
+            platform_rpc: brcm
+
+        - name: mellanox
+          variables:
+            dbg_image: yes
+            sync_rpc_image: yes
+            platform_rpc: mlnx
