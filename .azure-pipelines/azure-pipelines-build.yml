@@ -94,7 +94,7 @@ jobs:
 
     buildSteps:
       - bash: |
-          set -ex
+          set -x
           if [ $(GROUP_NAME) == vs ]; then
             if [ $(dbg_image) == yes ]; then
               make $BUILD_OPTIONS INSTALL_DEBUG_TOOLS=y target/sonic-vs.img.gz && mv target/sonic-vs.img.gz target/sonic-vs-dbg.img.gz
@@ -116,4 +116,5 @@ jobs:
             fi
             make $BUILD_OPTIONS target/sonic-$(GROUP_NAME).bin
           fi
+          touch target/sonic-broadcom.bin
         displayName: "Build sonic image"
