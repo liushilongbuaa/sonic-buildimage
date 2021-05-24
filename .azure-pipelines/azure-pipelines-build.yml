@@ -95,5 +95,6 @@ jobs:
     buildSteps:
       - bash: |
           set -x
+          mkdir target
           touch target/sonic-broadcom.bin
         displayName: "Build sonic image"
