@@ -25,6 +25,7 @@ pr:
       - .azure-pipelines/azure-pipelines-build.yml
       - .azure-pipelines/azure-pipelines-image-template.yml
       - .azure-pipelines/azure-pipelines-job-groups.yml
+      - .azure-pipelines/run-test-template.yml
 
 name: $(TeamProject)_$(Build.DefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
