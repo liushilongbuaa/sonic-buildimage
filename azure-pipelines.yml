@@ -20,6 +20,11 @@ pr:
   paths:
     exclude:
       - .github
+      - .azure-pipelines
+    include:
+      - .azure-pipelines/azure-pipelines-build.yml
+      - .azure-pipelines/azure-pipelines-image-template.yml
+      - .azure-pipelines/azure-pipelines-job-groups.yml
 
 name: $(TeamProject)_$(Build.DefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
