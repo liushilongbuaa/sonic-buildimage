@@ -35,7 +35,7 @@ stages:
     pool: sonictest
     timeoutInMinutes: 360
     steps:
-    - template: cleanup.yml
+    - template: ../cleanup.yml
     - checkout: self
       clean: true
       submodules: recursive

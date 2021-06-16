@@ -19,7 +19,7 @@ stages:
   variables:
     CACHE_MODE: cache
   jobs:
-  - template: azure-pipelines-build.yml
+  - template: ../azure-pipelines-build.yml
     parameters:
       buildOptions: 'USERNAME=admin SONIC_BUILD_JOBS=$(nproc) ${{ variables.VERSION_CONTROL_OPTIONS }}'
       jobGroups:
