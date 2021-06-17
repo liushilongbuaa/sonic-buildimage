@@ -41,6 +41,7 @@ stages:
       submodules: recursive
     - bash: |
         set -xe
+        mkdir target
         touch target/docker-sonic-mgmt.gz
         cp target -r $(Build.ArtifactStagingDirectory)/target
       displayName: Build docker-sonic-mgmt.gz
