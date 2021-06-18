@@ -15,7 +15,7 @@ trigger:
 pr:
   branches:
     include:
-      - master
+      - '*'
       - 202012
   paths:
     exclude:
