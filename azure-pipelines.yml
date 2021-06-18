@@ -16,7 +16,7 @@ pr:
   branches:
     include:
       - '*'
-      - 202012
+      - azp-add-cache-build-test
   paths:
     exclude:
       - .github
