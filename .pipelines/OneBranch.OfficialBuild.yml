@@ -59,6 +59,7 @@ stages:
             SONIC_VERSION=$(sonic_get_version)
             echo SONIC_VERSION=${SONIC_VERSION} > sonic.properties
             LATEST_TAG=$(git describe --tags --abbrev=0)
+            [[ $LATEST_TAG == *-merge ]] && LATEST_TAG=
             mkdir -p target/release
             rm -f target/sonic-installers
             echo $SONIC_VERSION > $VERSION_PATH
@@ -184,8 +185,8 @@ stages:
             echo "==== Building regular images"
             make $OPTIONS target/sonic-broadcom.bin target/sonic-aboot-broadcom.swi target/sonic-broadcom.raw
             mv target/sonic-broadcom.bin target/sonic-aboot-broadcom.swi target/sonic-broadcom.raw target/release/
-            make $OPTIONS target/debs/buster/python-thrift_0.11.0-4_amd64.deb
-            cp target/debs/buster/python-thrift_0.11.0-4_amd64.deb target/
+            make $OPTIONS target/debs/buster/python-saithrift_0.9.4_amd64.deb
+            cp target/debs/buster/python-saithrift_0.9.4_amd64.deb target/
             echo "==== Finished building regular images"
 
             echo "==== Building syncd-rpc docker"
