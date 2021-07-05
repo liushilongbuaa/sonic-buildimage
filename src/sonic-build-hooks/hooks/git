@@ -58,12 +58,14 @@ main(){
     pushd $clone_PATH &> /dev/null
     commit_latest=`$REAL_COMMAND log -n 1 | head -n 1| awk '{print$2}'`
     [ -f $version_file ] && commit=`grep $URL $version_file | awk -F== '{print$2}'`
+    echo SONIC_VERSION_CONTROL_COMPONENTS:$SONIC_VERSION_CONTROL_COMPONENTS
+    echo ENABLE_VERSION_CONTROL_GIT:$ENABLE_VERSION_CONTROL_GIT
 
     # control version or record version file
     if [[ $ENABLE_VERSION_CONTROL_GIT == "y" ]];then
         # control version
         [ ! -z $commit ] && $REAL_COMMAND reset --hard $commit &> /dev/null
-	echo "event: reset, repo: $URL commit: $commit" 
+	echo "event: reset, repo: $URL commit: $commit"
     else
         # record version file
         echo "$URL==$commit_latest" >> $new_version_file
