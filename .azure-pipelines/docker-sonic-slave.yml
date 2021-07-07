@@ -86,6 +86,8 @@ stages:
 
               echo ${{ arch }} > .arch
 
+              echo HHHHHHHHHHHHHH$(BUILD_OPTIONS)
+              exit 1
               DOCKER_DATA_ROOT_FOR_MULTIARCH=/data/march/docker BLDENV=${{ dist }} $(BUILD_OPTIONS) make -f Makefile.work sonic-slave-build | tee $tmpfile
               SLAVE_BASE_TAG=$(grep "^Checking sonic-slave-base image:" $tmpfile | awk -F ':' '{print $3}')
               SLAVE_TAG=$(grep "^Checking sonic-slave image:" $tmpfile | awk -F ':' '{print $3}')
