@@ -44,10 +44,12 @@ parameters:
   default: sonicdev
 
 variables:
-${{ if and(startsWith(variables['Build.SourceBranchName'], '202'), eq(length(variables['Build.SourceBranchName']), 6)) }}:
-  BUILD_OPTIONS: 'SONIC_VERSION_CONTROL_COMPONENTS=deb,py2,py3,web'
-${{ if not(and(startsWith(variables['Build.SourceBranchName'], '202'), eq(length(variables['Build.SourceBranchName']), 6))) }}:
-  BUILD_OPTIONS: 'SONIC_VERSION_CONTROL_COMPONENTS='
+- ${{ if and(startsWith(variables['Build.SourceBranchName'], '202'), eq(length(variables['Build.SourceBranchName']), 6)) }}:
+  - name: BUILD_OPTIONS
+    value: 'SONIC_VERSION_CONTROL_COMPONENTS=deb,py2,py3,web'
+- ${{ if not(and(startsWith(variables['Build.SourceBranchName'], '202'), eq(length(variables['Build.SourceBranchName']), 6))) }}:
+  - name: BUILD_OPTIONS
+    value: 'SONIC_VERSION_CONTROL_COMPONENTS='
 stages:
 - stage: Build
   jobs:
