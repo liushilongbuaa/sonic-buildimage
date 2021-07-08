@@ -1,0 +1,19 @@
+From 7c49d5b28bfde27df18d20bc7a9de564d29e72f6 Mon Sep 17 00:00:00 2001
+From: Jiahua Wang <jiahwang@cisco.com>
+Date: Mon, 17 Feb 2020 17:16:40 -0800
+Subject: [PATCH] Add driver-hwmon-pmbus-cisco_n2200-update2.patch
+
+Signed-off-by: Jiahua Wang <jiahwang@cisco.com>
+---
+ patch/driver-hwmon-pmbus-cisco_n2200-update2.patch | 1 +
+ 2 files changed, 2 insertions(+)
+ create mode 120000 patch/driver-hwmon-pmbus-cisco_n2200-update2.patch
+
+diff --git a/patch/driver-hwmon-pmbus-cisco_n2200-update2.patch b/patch/driver-hwmon-pmbus-cisco_n2200-update2.patch
+new file mode 120000
+index 0000000..d416092
+--- /dev/null
++++ b/patch/driver-hwmon-pmbus-cisco_n2200-update2.patch
+@@ -0,0 +1 @@
++../../sonic-linux-kernel.patch/patch/driver-hwmon-pmbus-cisco_n2200-update2.patch
+\ No newline at end of file

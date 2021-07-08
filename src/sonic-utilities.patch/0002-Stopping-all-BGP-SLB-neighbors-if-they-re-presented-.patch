@@ -1,0 +1,41 @@
+From 83e8f2b1bf9072a532ec3640431f442c0b4608a8 Mon Sep 17 00:00:00 2001
+From: Pavel Shirshov <pavelsh@microsoft.com>
+Date: Thu, 30 Jul 2020 09:01:36 -0700
+Subject: [PATCH] Stopping all BGP SLB neighbors before FastReboot
+
+---
+ scripts/fast-reboot | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/scripts/fast-reboot b/scripts/fast-reboot
+index e884dee..410828b 100755
+--- a/scripts/fast-reboot
++++ b/scripts/fast-reboot
+@@ -373,6 +373,24 @@ case "$REBOOT_TYPE" in
+         ;;
+ esac
+ 
++# Stopping all SLB neighbors if they're presented
++if [[ "$REBOOT_TYPE" = "fast-reboot" ]]; then
++    debug "Stopping all SLB neighbors if they are presented"
++    PASSIVE_BGP_NEIGHBORS=$(sonic-cfggen -d -v "BGP_PEER_RANGE | list")
++    case "$PASSIVE_BGP_NEIGHBORS" in
++        *BGPSLBPassive*)
++        RUNNING_CONFIG=$(vtysh -c "show running")
++        if grep -q "neighbor BGPSLBPassive peer-group" <<< "$RUNNING_CONFIG"; then
++            ASN=$(sonic-cfggen -d -v "DEVICE_METADATA['localhost']['bgp_asn']")
++            vtysh -c "configure terminal" -c "router bgp ${ASN}" -c "neighbor BGPSLBPassive shutdown"
++            sleep 30 # wait for 30 seconds - BGP RouteAdv default timer
++        fi
++        ;;
++    *)
++        ;;
++    esac
++fi
++
+ unload_kernel
+ 
+ setup_reboot_variables
+-- 
+2.17.1.windows.2
+

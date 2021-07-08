@@ -1,14 +1,16 @@
 constants:
   deployment_id_asn_map:
-    "1" : 65432
-    "2" : 65433
+    "1" : 64523
+    "2" : 65511
+    "3" : 64523
+    "4" : 64523
   bgp:
-    traffic_shift_community: 12345:12345
+    traffic_shift_community: 8075:8847
     families:
       - ipv4
       - ipv6
-    use_deployment_id: false
-    use_neighbors_meta: false
+    use_deployment_id: true
+    use_neighbors_meta: true
     graceful_restart:
       enabled: true
       restart_time: 240
@@ -21,25 +23,30 @@ constants:
     allow_list:
       enabled: true
       default_action: "permit"   # or "deny"
-      drop_community: 5060:12345  # value of the community to identify a prefix to drop. Make sense only with allow_list_default_action equal to 'permit'
+      drop_community: 8075:8823  # value of the community to identify a prefix to drop. Make sense only with allow_list_default_action equal to 'permit'
       default_pl_rules:
         v4:
           - "deny 0.0.0.0/0 le 17"
-          - "permit 127.0.0.1/32"
         v6:
           - "deny 0::/0 le 59"
           - "deny 0::/0 ge 65"
     bbr:
       enabled: true
-      default_state: "disabled"
+      default_state: "enabled"
     peers:
       general: # peer_type
         db_table: "BGP_NEIGHBOR"
-        template_dir: "general"
+        template_dir: "msft.general"
         bbr:
-          PEER_V4:
+          TIER0_V4:
             - ipv4
-          PEER_V6:
+          TYCOON_V4:
+            - ipv4
+          TIER0_V6:
+            - ipv6
+          DNS_AGG_V6:
+            - ipv6
+          TYCOON_V6:
             - ipv6
       internal: # peer_type
         db_table: "BGP_INTERNAL_NEIGHBOR"
@@ -47,13 +54,11 @@ constants:
       monitors: # peer_type
         enabled: true
         db_table: "BGP_MONITORS"
-        peer_group: "BGPMON"
-        template_dir: "monitors"
+        template_dir: "msft.monitors"
       dynamic: # peer_type
         enabled: true
         db_table: "BGP_PEER_RANGE"
-        peer_group: "BGP_SPEAKER"
-        template_dir: "dynamic"
+        template_dir: "msft.dynamic"
       voq_chassis: # peer_type
         enabled: true
         db_table: "BGP_VOQ_CHASSIS_NEIGHBOR"

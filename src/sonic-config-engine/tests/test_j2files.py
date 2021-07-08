@@ -37,7 +37,12 @@ class TestJ2Files(TestCase):
         return output
 
     def run_diff(self, file1, file2):
-        return subprocess.check_output('diff -u {} {} || true'.format(file1, file2), shell=True)
+        output = subprocess.check_output('diff -u {} {} || true'.format(file1, file2), shell=True)
+
+        if utils.PY3x:
+            output = output.decode()
+
+        return output
 
     def test_interfaces(self):
         interfaces_template = os.path.join(self.test_dir, '..', '..', '..', 'files', 'image_config', 'interfaces', 'interfaces.j2')
@@ -199,7 +204,7 @@ class TestJ2Files(TestCase):
 
         # cleanup
         buffers_config_file_new = os.path.join(dell_dir_path, 'buffers_config.j2')
-        os.remove(buffers_config_file_new)
+#         os.remove(buffers_config_file_new)
 
         sample_output_file = os.path.join(self.test_dir, 'sample_output', utils.PYvX_DIR, 'buffers-dell6100.json')
         assert filecmp.cmp(sample_output_file, self.output_file)
@@ -236,7 +241,7 @@ class TestJ2Files(TestCase):
                 v["graph"], constants_yml, switch_template, self.output_file
             )
             sample_output_file = os.path.join(
-                self.test_dir, 'sample_output', v["output"]
+                self.test_dir, 'sample_output', utils.PYvX_DIR, v["output"]
             )
             self.run_script(argument)
             assert filecmp.cmp(sample_output_file, self.output_file)
@@ -268,7 +273,7 @@ class TestJ2Files(TestCase):
                 self.output_file
             )
             sample_output_file = os.path.join(
-                self.test_dir, 'sample_output', v["output"]
+                self.test_dir, 'sample_output', utils.PYvX_DIR, v["output"]
             )
             self.run_script(argument)
             assert filecmp.cmp(sample_output_file, self.output_file)
