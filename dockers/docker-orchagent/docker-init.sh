@@ -7,6 +7,7 @@ mkdir -p /etc/supervisor/conf.d/
 CFGGEN_PARAMS=" \
     -d \
     -y /etc/sonic/constants.yml \
+    -y /etc/sonic/sonic_version.yml \
     -t /usr/share/sonic/templates/switch.json.j2,/etc/swss/config.d/switch.json \
     -t /usr/share/sonic/templates/ipinip.json.j2,/etc/swss/config.d/ipinip.json \
     -t /usr/share/sonic/templates/ports.json.j2,/etc/swss/config.d/ports.json \

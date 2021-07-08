@@ -1,0 +1,79 @@
+From 1ee35266b7d26ea3393bb247de7c4d507385b048 Mon Sep 17 00:00:00 2001
+From: Joe LeVeque <jolevequ@microsoft.com>
+Date: Wed, 11 Apr 2018 18:14:47 +0000
+Subject: [PATCH] Add internal vendor-specific kernel patches to public kernel
+ patch
+
+---
+ patch/driver-hwmon-adt7462-fix-alarm-mask.patch         |  1 +
+ patch/driver-hwmon-pmbus-cisco-solvan.patch             |  1 +
+ patch/driver-hwmon-pmbus-cisco_n2200-update.patch       |  1 +
+ patch/driver-hwmon-pmbus-cisco_n2200.patch              |  1 +
+ patch/driver-mfd-enable-dh89xxcc-gpio.patch             |  1 +
+ patch/driver-rtc-cmos-address-space-256.patch           |  1 +
+ patch/include-asm-generic-gpio-ARCH_NR_GPIOs-1024.patch |  1 +
+ 11 files changed, 20 insertions(+)
+ create mode 120000 patch/driver-hwmon-adt7462-fix-alarm-mask.patch
+ create mode 120000 patch/driver-hwmon-pmbus-cisco-solvan.patch
+ create mode 120000 patch/driver-hwmon-pmbus-cisco_n2200-update.patch
+ create mode 120000 patch/driver-hwmon-pmbus-cisco_n2200.patch
+ create mode 120000 patch/driver-mfd-enable-dh89xxcc-gpio.patch
+ create mode 120000 patch/driver-rtc-cmos-address-space-256.patch
+ create mode 120000 patch/include-asm-generic-gpio-ARCH_NR_GPIOs-1024.patch
+
+diff --git a/patch/driver-hwmon-adt7462-fix-alarm-mask.patch b/patch/driver-hwmon-adt7462-fix-alarm-mask.patch
+new file mode 120000
+index 0000000..8e04b38
+--- /dev/null
++++ b/patch/driver-hwmon-adt7462-fix-alarm-mask.patch
+@@ -0,0 +1 @@
++../../sonic-linux-kernel.patch/patch/driver-hwmon-adt7462-fix-alarm-mask.patch
+\ No newline at end of file
+diff --git a/patch/driver-hwmon-pmbus-cisco-solvan.patch b/patch/driver-hwmon-pmbus-cisco-solvan.patch
+new file mode 120000
+index 0000000..085337d
+--- /dev/null
++++ b/patch/driver-hwmon-pmbus-cisco-solvan.patch
+@@ -0,0 +1 @@
++../../sonic-linux-kernel.patch/patch/driver-hwmon-pmbus-cisco-solvan.patch
+\ No newline at end of file
+diff --git a/patch/driver-hwmon-pmbus-cisco_n2200-update.patch b/patch/driver-hwmon-pmbus-cisco_n2200-update.patch
+new file mode 120000
+index 0000000..c6612e4
+--- /dev/null
++++ b/patch/driver-hwmon-pmbus-cisco_n2200-update.patch
+@@ -0,0 +1 @@
++../../sonic-linux-kernel.patch/patch/driver-hwmon-pmbus-cisco_n2200-update.patch
+\ No newline at end of file
+diff --git a/patch/driver-hwmon-pmbus-cisco_n2200.patch b/patch/driver-hwmon-pmbus-cisco_n2200.patch
+new file mode 120000
+index 0000000..1fa3258
+--- /dev/null
++++ b/patch/driver-hwmon-pmbus-cisco_n2200.patch
+@@ -0,0 +1 @@
++../../sonic-linux-kernel.patch/patch/driver-hwmon-pmbus-cisco_n2200.patch
+\ No newline at end of file
+diff --git a/patch/driver-mfd-enable-dh89xxcc-gpio.patch b/patch/driver-mfd-enable-dh89xxcc-gpio.patch
+new file mode 120000
+index 0000000..715a9b8
+--- /dev/null
++++ b/patch/driver-mfd-enable-dh89xxcc-gpio.patch
+@@ -0,0 +1 @@
++../../sonic-linux-kernel.patch/patch/driver-mfd-enable-dh89xxcc-gpio.patch
+\ No newline at end of file
+diff --git a/patch/driver-rtc-cmos-address-space-256.patch b/patch/driver-rtc-cmos-address-space-256.patch
+new file mode 120000
+index 0000000..8565fe5
+--- /dev/null
++++ b/patch/driver-rtc-cmos-address-space-256.patch
+@@ -0,0 +1 @@
++../../sonic-linux-kernel.patch/patch/driver-rtc-cmos-address-space-256.patch
+\ No newline at end of file
+diff --git a/patch/include-asm-generic-gpio-ARCH_NR_GPIOs-1024.patch b/patch/include-asm-generic-gpio-ARCH_NR_GPIOs-1024.patch
+new file mode 120000
+index 0000000..1739840
+--- /dev/null
++++ b/patch/include-asm-generic-gpio-ARCH_NR_GPIOs-1024.patch
+@@ -0,0 +1 @@
++../../sonic-linux-kernel.patch/patch/include-asm-generic-gpio-ARCH_NR_GPIOs-1024.patch
+\ No newline at end of file
