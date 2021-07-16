@@ -19,6 +19,7 @@ parameters:
   - vs
   - broadcom
   - mellanox
+  - marvell-armhf
 
 variables:
 - group: SONIC-BUILD-VG-1
@@ -221,3 +222,8 @@ stages:
             OPTIONS="$BUILD_OPTIONS ENABLE_NAT=n PASSWORD=$PASSWORD"
             make $OPTIONS ENABLE_RESTAPI=y target/docker-syncd-bfn-rpc.gz
             make $OPTIONS target/sonic-aboot-barefoot.swi
+        - name: marvell-armhf
+          timeoutInMinutes: 2160
+          script: |
+            OPTIONS="$BUILD_OPTIONS PASSWORD=$PASSWORD"
+            make $OPTIONS target/sonic-marvell-armhf.bin
