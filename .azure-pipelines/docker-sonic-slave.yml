@@ -60,7 +60,6 @@ stages:
           - template: cleanup.yml
           - checkout: self
             clean: true
-            submodules: recursive
           - bash: |
               set -ex
 
