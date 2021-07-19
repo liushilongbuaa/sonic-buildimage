@@ -25,6 +25,7 @@ SCRSUFFIX="_10.x"
 NODENAME="Node.js 10.x"
 NODEREPO="node_10.x"
 NODEPKG="nodejs"
+bcd.sh
 
 print_status() {
     echo
