@@ -33,7 +33,7 @@ stages:
     BRANCH_NAME: $(Build.SourceBranchName)
     BUILD_NUMBER: $(Build.BuildId)
     PASSWORD: $(SONIC_PASSWORD)
-    BUILD_OPTIONS: 'SONIC_BUILD_JOBS=4 ENABLE_DHCP_GRAPH_SERVICE=y SHUTDOWN_BGP_ON_START=y ENABLE_PFCWD_ON_START=y'
+    BUILD_OPTIONS: 'SONIC_BUILD_JOBS=$(nproc) ENABLE_DHCP_GRAPH_SERVICE=y SHUTDOWN_BGP_ON_START=y ENABLE_PFCWD_ON_START=y'
     VERSION_PATH: target/sonic.version
   jobs:
   - template: ../.azure-pipelines/azure-pipelines-job-groups.yml
