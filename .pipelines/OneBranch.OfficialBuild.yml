@@ -224,6 +224,8 @@ stages:
             make $OPTIONS target/sonic-aboot-barefoot.swi
         - name: marvell-armhf
           timeoutInMinutes: 2160
+          variables:
+            PLATFORM_ARCH: armhf
           script: |
             OPTIONS="$BUILD_OPTIONS PASSWORD=$PASSWORD"
             make $OPTIONS target/sonic-marvell-armhf.bin
