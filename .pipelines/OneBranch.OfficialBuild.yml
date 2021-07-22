@@ -223,7 +223,7 @@ stages:
             make $OPTIONS ENABLE_RESTAPI=y target/docker-syncd-bfn-rpc.gz
             make $OPTIONS target/sonic-aboot-barefoot.swi
         - name: marvell-armhf
-          timeoutInMinutes: 2160
+          timeoutInMinutes: 4320
           variables:
             PLATFORM_ARCH: armhf
           script: |
