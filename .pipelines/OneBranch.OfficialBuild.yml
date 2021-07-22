@@ -147,7 +147,7 @@ stages:
         - script: |
             SONIC_VERSION=$(cat $VERSION_PATH)
             PORT=443
-            ACS_PORT=5000
+            ACS_PORT=443
             DOCKERS=$(ls target/docker-*.gz)
             BRANCH=$(Build.SourceBranchName)
             for f in $DOCKERS; do
