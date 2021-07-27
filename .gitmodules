@@ -16,10 +16,6 @@
 [submodule "src/p4-hlir/p4-hlir"]
 	path = platform/p4/p4-hlir/p4-hlir
 	url = https://github.com/p4lang/p4-hlir
-[submodule "quagga"]
-	path = src/sonic-quagga
-	url = https://github.com/Azure/sonic-quagga
-	branch = debian/0.99.24.1
 [submodule "sonic-dbsyncd"]
 	path = src/sonic-dbsyncd
 	url = https://github.com/Azure/sonic-dbsyncd
@@ -91,3 +87,7 @@
 [submodule "platform/broadcom/Networking-acs-platform-modules-n3132"]
 	path = platform/broadcom/Networking-acs-platform-modules-n3132
 	url = https://msazure.visualstudio.com/One/_git/Networking-acs-platform-modules-n3132
+[submodule "platform/broadcom/saibcm-modules-dnx"]
+	path = platform/broadcom/saibcm-modules-dnx
+	url = https://github.com/Azure/saibcm-modules.git
+	branch =  sdk-6.5.22-gpl-dnx
