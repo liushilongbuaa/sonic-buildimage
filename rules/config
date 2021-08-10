@@ -139,6 +139,9 @@ INCLUDE_RESTAPI = n
 # INCLUDE_NAT - build docker-nat for nat support
 INCLUDE_NAT = n
 
+# INCLUDE_DHCP_RELAY - build and install dhcp-relay package
+INCLUDE_DHCP_RELAY = y
+
 # TELEMETRY_WRITABLE - Enable write/config operations via the gNMI interface.
 # Uncomment to enable:
 # TELEMETRY_WRITABLE = y
@@ -188,12 +191,11 @@ TRUSTED_GPG_URLS = https://packages.trafficmanager.net/debian/public_key.gpg,htt
 #   docker: docker base images
 SONIC_VERSION_CONTROL_COMPONENTS ?= none
 
-# SONiC docker registry
-#
-# Uncomment below line to enable pulling sonic-slave docker from registry
-# ENABLE_DOCKER_BASE_PULL = y
-REGISTRY_PORT=443
-REGISTRY_SERVER=sonicdev-microsoft.azurecr.io
-
 # INCLUDE_MUX - build docker-mux for dual ToR (Gemini)
 INCLUDE_MUX = y
+
+# SONiC docker registry
+#
+# Set the env variable ENABLE_DOCKER_BASE_PULL = y to enable pulling sonic-slave docker from registry
+REGISTRY_PORT ?= 443
+REGISTRY_SERVER ?= sonicdev-microsoft.azurecr.io
