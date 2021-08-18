@@ -23,18 +23,14 @@ parameters:
   - broadcom
   - mellanox
   - marvell-armhf
-- name: 'artifactFolder'
+- name: 'trusty8LinkPath'
   type: string
-  default: 'sourceBranch'
+  default: ''
 
 variables:
 - group: SONIC-BUILD-VG-1
-- ${{ if eq(parameters.artifactFolder, 'sourceBranch') }}:
-  - name: PUBLISH_BLOB_PREFIX
-    value: pipelines/$(Build.DefinitionName)/$(Build.SourceBranch)
-- ${{ if ne(parameters.artifactFolder, 'sourceBranch') }}:
-  - name: PUBLISH_BLOB_PREFIX
-    value: pipelines/$(Build.DefinitionName)/${{ parameters.artifactFolder }}
+- name: PUBLISH_BLOB_PREFIX
+  value: pipelines/$(Build.DefinitionName)/$(Build.SourceBranchName)
 
 stages:
 - stage: Build
@@ -117,6 +113,7 @@ stages:
                 LATEST_VERSION=
                 PREVIOUS_VERSION=
                 latest_path=/azmirrors/$(PUBLISH_BLOB_PREFIX)/$(GROUP_NAME)/$(BUILD_NUMBER)
+                [ -n "${{ parameters.trusty8LinkPath }}" ] && BRANCH_NAME=${{ parameters.trusty8LinkPath }}
                 link_path=/data/$(dirname $(PUBLISH_BLOB_PREFIX))/$(GROUP_NAME)/$(BRANCH_NAME)/$link_foldername
                 [ -e $link_path/latest ] && LATEST_VERSION=$(cat $link_path/latest/target/sonic.version)
                 mkdir -p $link_path
