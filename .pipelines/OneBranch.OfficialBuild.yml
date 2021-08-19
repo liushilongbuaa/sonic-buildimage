@@ -60,11 +60,11 @@ stages:
             . functions.sh
             SONIC_VERSION=$(sonic_get_version)
             echo SONIC_VERSION=${SONIC_VERSION} > sonic.properties
-            LATEST_TAG=$(git describe --tags --abbrev=0)
-            [[ $LATEST_TAG == *-merge ]] && LATEST_TAG=
+            LATEST_TAG=$(git tag --points-at HEAD | grep -v -e '.*-merge' | head -n 1)
             mkdir -p target/release
             rm -f target/sonic-installers
             echo $SONIC_VERSION > $VERSION_PATH
+            echo $LATEST_TAG > target/sonic.tag 
             echo "SONIC_VERSION=$SONIC_VERSION, LATEST_TAG=$LATEST_TAG"
             echo "##vso[task.setvariable variable=SONIC_VERSION]$SONIC_VERSION"
             echo "##vso[task.setvariable variable=LATEST_TAG]$LATEST_TAG"
@@ -98,9 +98,31 @@ stages:
             azcopy/azcopy copy prev_build "$PUBLISH_PLATFORM_URL/prev_build$StorageSASKey"  --put-md5
           env:
             StorageSASKey: $(SONIC_STORAGE_SASKEY)
-          displayName: "Publish to Azure Storage"
+          condition: not(startsWith(variables['PLATFORM_ARCH'], 'armhf'))
+          displayName: "Publish to Azure Storage by azcopy"
+        - script: |
+            # currently the azcopy is not supported in arm, see https://github.com/Azure/azure-storage-azcopy/issues/882
+            [ ! -e /agent/blobfuse ] && mkdir -p /agent/blobfuse /agent/blobfuse-cache
+            sudo umount /agent/blobfuse > /dev/null 2>&1
+            if ! mountpoint -q  /agent/blobfuse; then
+              blobfuse /agent/blobfuse --tmp-path=/agent/blobfuse-cache --container-name=images
+            fi
+            PUBLISH_PATH=/agent/blobfuse/$(PUBLISH_BLOB_PREFIX)/$(GROUP_NAME)
+            mkdir -p $PUBLISH_PATH/$(Build.BuildId)
+            cp -rf target $PUBLISH_PATH/$(Build.BuildId)/
+            touch prev_build
+            [ -f $PUBLISH_PATH/latest_build ] && cp $PUBLISH_PATH/latest_build prev_build
+            echo $(Build.BuildId) > latest_build
+            cp latest_build $PUBLISH_PATH/
+            cp prev_build $PUBLISH_PATH/
+          condition: startsWith(variables['PLATFORM_ARCH'], 'armhf')
+          env:
+            AZURE_STORAGE_ACCOUNT: $(SONIC_STORAGE_ACCOUNT)
+            AZURE_STORAGE_SAS_TOKEN: $(SONIC_STORAGE_SASKEY)
+          displayName: "Publish to Azure Storage by blobfuse"
         - task: SSH@0
           displayName: "Make soft links for trusty8"
+          condition: not(startsWith(variables['PLATFORM_ARCH'], 'armhf'))
           inputs:
             sshEndpoint: 'acs-trusty8'
             runOptions: 'inline'
@@ -163,6 +185,7 @@ stages:
             BUILD_NUMBER: $(Build.BuildId)
           displayName: "Publish to Docker Registry"
         - task: ComponentGovernanceComponentDetection@0
+          condition: not(startsWith(variables['PLATFORM_ARCH'], 'armhf'))
         - script: |
             sudo rm -rf fsroot
             docker rmi -f $(docker images docker-* -a -q | grep docker-) || true
@@ -221,9 +244,14 @@ stages:
             make $OPTIONS ENABLE_RESTAPI=y target/docker-syncd-bfn-rpc.gz
             make $OPTIONS target/sonic-aboot-barefoot.swi
         - name: marvell-armhf
+          pool:
+            name: 'CDPCustom- sonic-build-agents'
+            demands:
+            - Docker.Arch -equals armhf
           timeoutInMinutes: 4320
           variables:
             PLATFORM_ARCH: armhf
           script: |
+            echo "INCLUDE_ACMS = n" > rules/config.user
             OPTIONS="$BUILD_OPTIONS PASSWORD=$PASSWORD"
             make $OPTIONS target/sonic-marvell-armhf.bin
