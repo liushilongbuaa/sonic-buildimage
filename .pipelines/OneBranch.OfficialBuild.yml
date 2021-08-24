@@ -122,7 +122,6 @@ stages:
           displayName: "Publish to Azure Storage by blobfuse"
         - task: SSH@0
           displayName: "Make soft links for trusty8"
-          condition: not(startsWith(variables['PLATFORM_ARCH'], 'armhf'))
           inputs:
             sshEndpoint: 'acs-trusty8'
             runOptions: 'inline'
