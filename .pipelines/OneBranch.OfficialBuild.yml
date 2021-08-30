@@ -219,6 +219,10 @@ stages:
             make $OPTIONS ENABLE_SYNCD_RPC=y target/docker-syncd-brcm-rpc.gz
             echo "==== Finished building syncd-rpc docker"
 
+            echo "==== Building saiserver docker"
+            make $OPTIONS ENABLE_SYNCD_RPC=y target/docker-saiserver-brcm.gz
+            echo "==== Finished building saiserver docker"
+
             echo "==== Building one debug image"
             make $OPTIONS INSTALL_DEBUG_TOOLS=y target/sonic-broadcom.bin
             mv target/sonic-broadcom.bin target/sonic-broadcom-dbg.bin
