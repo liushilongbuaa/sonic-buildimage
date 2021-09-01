@@ -255,6 +255,5 @@ stages:
           variables:
             PLATFORM_ARCH: armhf
           script: |
-            echo "INCLUDE_ACMS = n" > rules/config.user
             OPTIONS="$BUILD_OPTIONS PASSWORD=$PASSWORD"
             make $OPTIONS target/sonic-marvell-armhf.bin

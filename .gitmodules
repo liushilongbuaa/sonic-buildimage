@@ -89,3 +89,6 @@
 [submodule "platform/broadcom/Networking-acs-platform-modules-n3132"]
 	path = platform/broadcom/Networking-acs-platform-modules-n3132
 	url = https://msazure.visualstudio.com/One/_git/Networking-acs-platform-modules-n3132
+[submodule "src/security-DsmsLinux"]
+	path = src/security-DsmsLinux
+	url = https://msazure.visualstudio.com/One/_git/security-DsmsLinux
