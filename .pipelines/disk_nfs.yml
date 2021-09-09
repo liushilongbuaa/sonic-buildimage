@@ -1,0 +1,22 @@
+steps:
+  - script: |
+      set -ex
+      if [[ $(GROUP_NAME) == 'marvell-armhf' ]];then
+        exit 0
+      fi
+      if $SYSTEM_DEBUG;then df -h;lsblk;fi
+      datadisk=$(lsblk -d | grep nvme | awk '{print $1}')
+      disk_mount=`df -h | grep ${datadisk}p1 | grep data || true`
+      if [ -z "$disk_mount" ];then
+        sudo sgdisk -n 0:0:0 -t 0:8300 -c 0:data /dev/$datadisk
+        sudo mkfs.ext4 /dev/${datadisk}p1
+        sudo mount /dev/${datadisk}p1 /data
+        sudo systemctl restart docker
+      fi
+
+      mkdir /nfs || true
+      sudo mount -t nfs -o sec=sys,vers=4.1 10.0.5.4:/jenkins-vol-1 /nfs || true
+      sudo chown nobody /nfs || true
+      sudo chmod u=rwx,g=rwx,o=r /nfs || true
+      if $SYSTEM_DEBUG;then df -h;ls /nfs -al || true;fi
+    displayName: 'Mount disk/nfs'
