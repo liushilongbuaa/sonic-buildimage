@@ -6,8 +6,10 @@ steps:
       fi
       if $SYSTEM_DEBUG;then df -h;lsblk;fi
 
+      sudo systemctl stop docker
       sudo sed -i 's/^ExecStart=.*$/& --data-root \/mnt\/docker/' /lib/systemd/system/docker.service
-      sudo systemctl restart docker
+      sudo systemctl daemon-reload
+      sudo systemctl start docker
       sleep 2
       mkdir /nfs || true
       sudo mount -t nfs -o sec=sys,vers=4.1 10.0.5.4:/jenkins-vol-1 /nfs || true

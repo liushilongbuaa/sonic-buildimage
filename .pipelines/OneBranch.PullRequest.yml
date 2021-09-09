@@ -29,3 +29,8 @@ stages:
       - name: mellanox
       preSteps:
         - template: disk_nfs.yml
+      postSteps:
+        - script: |
+            df -h
+          displayName: 'Debug step'
+          condition: always()
