@@ -13,7 +13,7 @@ pr: none
 
 name: $(TeamProject)_$(Build.DefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
-pool: sonic-image-builder
+pool: sonic-build-image-1ES
 
 parameters:
 - name: 'jobFilters'
@@ -50,7 +50,7 @@ stages:
         PASSWORD: '$(PASSWORD)'
       jobFilters: ${{ parameters.jobFilters }}
       preSteps:
-        - template: ../.azure-pipelines/cleanup.yml
+        - template: disk_nfs.yml
         - checkout: self
           clean: true
           submodules: recursive
@@ -71,6 +71,9 @@ stages:
             ENABLE_DOCKER_BASE_PULL=y make PLATFORM=$(GROUP_NAME) PLATFORM_ARCH=$(PLATFORM_ARCH) $(BUILD_OPTIONS) configure
           displayName: 'Make configure'
       postSteps:
+        - script: df -h
+          displayName: 'Debug step'
+          condition: always()
         - publish: $(System.DefaultWorkingDirectory)/target
           artifact: 'sonic-buildimage.$(GROUP_NAME)'
           displayName: "Archive sonic image"

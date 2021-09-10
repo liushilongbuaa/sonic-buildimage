@@ -30,7 +30,6 @@ stages:
       preSteps:
         - template: disk_nfs.yml
       postSteps:
-        - script: |
-            df -h
+        - script: df -h
           displayName: 'Debug step'
           condition: always()
