@@ -12,7 +12,7 @@ name: $(TeamProject)_$(Build.DefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd
 
 stages:
 - stage: Build
-  pool: sonic-build-image-1ES
+  pool: sonic-image-builder-1ES
   variables:
     CACHE_MODE: rcache
     ${{ if eq(variables['Build.SourceBranchName'], '202012') }}:
