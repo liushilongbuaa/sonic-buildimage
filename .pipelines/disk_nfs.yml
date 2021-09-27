@@ -17,5 +17,5 @@ steps:
       sudo chown nobody /nfs
       sudo chmod u=rwx,g=rwx,o=r /nfs
       df -h
-      ls /nfs -al
+      sudo ls /nfs -al
     displayName: 'Mount disk/nfs'
