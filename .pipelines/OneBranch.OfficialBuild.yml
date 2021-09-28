@@ -51,6 +51,7 @@ stages:
       jobFilters: ${{ parameters.jobFilters }}
       preSteps:
         - template: disk_nfs.yml
+        - template: ../.azure-pipelines/cleanup.yml
         - checkout: self
           clean: true
           submodules: recursive
