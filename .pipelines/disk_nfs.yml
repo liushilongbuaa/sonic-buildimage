@@ -4,8 +4,6 @@ steps:
       if [[ $(GROUP_NAME) == 'marvell-armhf' ]];then
         exit 0
       fi
-      df -h
-      lsblk
 
       sudo systemctl stop docker
       sudo sed -i 's/^ExecStart=.*$/& --data-root \/mnt\/docker/' /lib/systemd/system/docker.service
@@ -16,6 +14,4 @@ steps:
       sudo mount -t nfs -o sec=sys,vers=4.1 10.0.5.4:/jenkins-vol-1 /nfs
       sudo chown nobody /nfs
       sudo chmod u=rwx,g=rwx,o=r /nfs
-      df -h
-      sudo ls /nfs -al
-    displayName: 'Mount disk/nfs'
+    displayName: 'Mount nfs, restart docker'
