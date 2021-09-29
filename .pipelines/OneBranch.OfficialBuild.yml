@@ -13,7 +13,7 @@ pr: none
 
 name: $(TeamProject)_$(Build.DefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
-pool: sonic-image-builder
+pool: sonic-image-builder-1ES
 
 parameters:
 - name: 'jobFilters'
@@ -50,6 +50,7 @@ stages:
         PASSWORD: '$(PASSWORD)'
       jobFilters: ${{ parameters.jobFilters }}
       preSteps:
+        - template: disk_nfs.yml
         - template: ../.azure-pipelines/cleanup.yml
         - checkout: self
           clean: true
