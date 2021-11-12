@@ -628,14 +628,11 @@ class TestCfgGen(TestCase):
             utils.to_dict("{'10.20.30.40': {'rrclient': 0, 'name': 'BGPMonitor', 'local_addr': '10.1.0.32', 'nhopself': 0, 'holdtime': '10', 'asn': '0', 'keepalive': '3'}}")
         )
 
-    def test_minigraph_sub_port_interfaces(self, check_stderr=True):
-        self.verify_sub_intf(check_stderr=check_stderr)
+    def test_minigraph_sub_port_intf_hwsku(self, check_stderr=True):
+        self.verify_sub_intf(graph_file=self.sample_resource_graph, check_stderr=check_stderr)
 
     def test_minigraph_sub_port_intf_resource_type_non_backend_tor(self, check_stderr=True):
         self.verify_sub_intf_non_backend_tor(graph_file=self.sample_resource_graph, check_stderr=check_stderr)
-
-    def test_minigraph_sub_port_intf_resource_type(self, check_stderr=True):
-        self.verify_sub_intf(graph_file=self.sample_resource_graph, check_stderr=check_stderr)
 
     def test_minigraph_sub_port_intf_sub(self, check_stderr=True):
         self.verify_sub_intf(graph_file=self.sample_subintf_graph, check_stderr=check_stderr)
