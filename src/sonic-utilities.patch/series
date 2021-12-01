@@ -1,1 +1,4 @@
+0001-sonic_installer-NBI-support.patch
 0002-Stopping-all-BGP-SLB-neighbors-if-they-re-presented-.patch
+0003-fast-reboot-changes-for-Cisco-NBI-image-and-Cisco-AS.patch
+0004-Fix-for-enabling-kdump-in-NBI-boot.patch

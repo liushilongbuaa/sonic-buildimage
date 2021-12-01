@@ -24,6 +24,7 @@ fi
 }
 
 IMAGE_VERSION="${SONIC_IMAGE_VERSION}"
+LINUX_KERNEL_VERSION=$(basename fsroot/boot/initrd.img-*-amd64 -amd64 | cut -b 12-)
 
 generate_onie_installer_image()
 {
@@ -153,6 +154,89 @@ elif [ "$IMAGE_TYPE" = "aboot" ]; then
         [ -f "$CA_CERT" ] && cp "$CA_CERT" "$TARGET_CA_CERT"
         ./scripts/sign_image.sh -i "$OUTPUT_ABOOT_IMAGE" -k "$SIGNING_KEY" -c "$SIGNING_CERT" -a "$TARGET_CA_CERT"
     fi
+elif [ "$IMAGE_TYPE" = "nbi" ]; then
+    echo "Build NBI installer"
+    mkdir -p `dirname $OUTPUT_NBI_IMAGE`
+    sudo rm -f $OUTPUT_NBI_IMAGE
+    sudo rm -f nbi-md5sums
+    md5sum $FILESYSTEM_SQUASHFS $FILESYSTEM_DOCKERFS > nbi-md5sums
+    sudo rm -f .imagehash
+    echo "$IMAGE_VERSION" >> .imagehash
+    sudo rm -f nos_install_plugin.tgz
+    sudo rm -fr nos_plugin_files
+    mkdir nos_plugin_files
+    cp files/nbi/nos_plugin_files/* nos_plugin_files
+    sed -i -e "s/%%IMAGE_VERSION%%/$IMAGE_VERSION/g" nos_plugin_files/nos_install_helper.include
+    #cp fsroot/sbin/kexec nos_plugin_files/nos_kexec
+    cp files/nbi/nos_kexec nos_plugin_files/nos_kexec
+    chmod +x nos_plugin_files/nos_kexec
+    pushd nos_plugin_files && tar cvzf ../nos_install_plugin.tgz .; popd
+    sudo rm -fr initrd-root
+    mkdir initrd-root
+    pushd initrd-root
+    zcat ../fsroot/boot/initrd.img-${LINUX_KERNEL_VERSION}-amd64 | cpio -idmv
+    if [ $? != 0 ]; then
+        echo "Error:: Couldn\'t find ./fsroot/boot/initrd.img-${LINUX_KERNEL_VERSION}-amd64"
+        exit 1
+    fi
+    cp ../nbi-md5sums nbi-md5sums
+    cp ../.imagehash .imagehash
+    mkdir -p isanboot/bin/images
+    cp ../nos_install_plugin.tgz isanboot/bin/images/nos_install_plugin.tz
+    [ "$(id -ru)" != 0 ] && cpio_owner_root="-R 0:0"
+    find . | cpio --quiet $cpio_owner_root -o -H newc | gzip > ../nbi-run-initrd.img
+    popd
+    sudo rm -f $NBI_BOOT_IMAGE
+    sudo rm -f files/nbi/mknbi-ks-ver.sh
+    cp files/nbi/mknbi-ks.sh files/nbi/mknbi-ks-ver.sh
+    sed -i -e "s/%%IMAGE_VERSION%%/$IMAGE_VERSION/g" files/nbi/mknbi-ks-ver.sh
+    pushd files/nbi && ./mknbi-ks-ver.sh ../../$NBI_BOOT_IMAGE sonic-run.seg4 ../../fsroot/boot/vmlinuz-${LINUX_KERNEL_VERSION}-amd64 ../../nbi-run-initrd.img; popd
+    sudo rm nbi-run-initrd.img
+    sudo rm -f files/nbi/mknbi-ks-ver.sh
+    sudo rm -f nos_install_plugin.tgz
+    sudo rm -fr nos_plugin_files
+    mkdir nos_plugin_files
+    cp files/nbi/nos_plugin_files/* nos_plugin_files
+    sed -i -e "s/%%IMAGE_VERSION%%/$IMAGE_VERSION/g" nos_plugin_files/nos_install_helper.include
+    pushd nos_plugin_files && tar cvzf ../nos_install_plugin.tgz .; popd
+    sudo rm -fr nbi-host
+    mkdir -p nbi-host/image-$IMAGE_VERSION
+    sudo rm -f nbi-"$ONIE_INSTALLER_PAYLOAD"
+    pushd nbi-host/image-$IMAGE_VERSION && unzip ../../$ONIE_INSTALLER_PAYLOAD; popd
+    cp .imagehash nbi-md5sums nbi-host/image-$IMAGE_VERSION
+    cp $NBI_BOOT_IMAGE nbi-host/image-$IMAGE_VERSION
+    cp files/nbi/x86_64-n9200-r0/machine.conf nbi-host/
+    pushd nbi-host/ && zip -r ../nbi-"$ONIE_INSTALLER_PAYLOAD" .; popd
+    sudo rm -fr initrd-root
+    mkdir initrd-root
+    pushd initrd-root
+    zcat ../files/nbi/initrd.img | cpio -idmv
+    cp ../nbi-"$ONIE_INSTALLER_PAYLOAD" nbi-"$ONIE_INSTALLER_PAYLOAD"
+    mkdir -p isanboot/bin/images
+    cp ../nos_install_plugin.tgz isanboot/bin/images/nos_install_plugin.tz
+    cp ../.imagehash .
+    rm etc/rcS.d/S17mount-flash
+    rm etc/fstab
+    cp ../files/nbi/fstab etc/fstab
+    mkdir -p usr/local/install
+    cp ../files/nbi/self_install_files/* usr/local/install/
+    chmod +x usr/local/install/*
+    mkdir -p sonic_installer_scripts
+    #cp ../files/nbi/sonic-nbi-install.sh sonic_installer_scripts/
+    #chmod +x sonic_installer_scripts/*
+    sed -i -e "s/%%IMAGE_VERSION%%/$IMAGE_VERSION/g" usr/local/install/self_install_helper.include
+    [ "$(id -ru)" != 0 ] && cpio_owner_root="-R 0:0"
+    find . | cpio --quiet $cpio_owner_root -o -H newc | gzip > ../nbi-install-initrd.img
+    popd
+    sudo rm -fr initrd-root
+    sudo rm -f nos_install_plugin.tgz
+    sudo rm -fr nos_plugin_files
+    sudo rm -f files/nbi/mknbi-bin-ver.sh
+    cp files/nbi/mknbi-bin.sh files/nbi/mknbi-bin-ver.sh
+    sed -i -e "s/%%IMAGE_VERSION%%/$IMAGE_VERSION/g" files/nbi/mknbi-bin-ver.sh
+    pushd files/nbi && ./mknbi-bin-ver.sh ../../$OUTPUT_NBI_IMAGE sonic-install.seg4 ../../files/nbi/vmlinuz ../../nbi-install-initrd.img; popd
+    sudo rm nbi-install-initrd.img
+    sudo rm -f files/nbi/mknbi-bin-ver.sh
 else
     echo "Error: Non supported image type $IMAGE_TYPE"
     exit 1

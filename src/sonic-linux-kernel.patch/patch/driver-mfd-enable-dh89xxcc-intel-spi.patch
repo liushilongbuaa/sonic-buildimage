@@ -1,0 +1,21 @@
+driver-mfd-enable-dh89xxcc-intel-spi.patch
+
+From: Udayakumar Raghuraman <uraghura@cisco.com>
+
+Signed-off-by: uraghura <uraghura@contoso.com>
+---
+ drivers/mfd/lpc_ich.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/mfd/lpc_ich.c b/drivers/mfd/lpc_ich.c
+index bcb497c20..69fca5b11 100644
+--- a/drivers/mfd/lpc_ich.c
++++ b/drivers/mfd/lpc_ich.c
+@@ -498,6 +498,7 @@ static struct lpc_ich_info lpc_chipset_info[] = {
+ 		.name = "DH89xxCC",
+ 		.iTCO_version = 2,
+ 		.gpio_version = ICH_V5_GPIO,
++		.spi_type = INTEL_SPI_LPT,
+ 	},
+ 	[LPC_PPT] = {
+ 		.name = "Panther Point",

@@ -67,7 +67,9 @@ $(SONIC_ONE_IMAGE)_LAZY_INSTALLS += $(DELL_S6000_PLATFORM_MODULE) \
                                $(CEL_SILVERSTONE_PLATFORM_MODULE) \
                                $(JUNIPER_QFX5200_PLATFORM_MODULE) \
                                $(DELTA_AGC032_PLATFORM_MODULE) \
-                               $(CISCO_N3132_PLATFORM_MODULE)
+                               $(CISCO_N9200_PLATFORM_MODULE) \
+                               $(SONIC_CISCO_PLATFORM_API_PY2) \
+                               $(SONIC_CISCO_PLATFORM_API_PY3)
 
 ifeq ($(INSTALL_DEBUG_TOOLS),y)
 $(SONIC_ONE_IMAGE)_DOCKERS += $(SONIC_INSTALL_DOCKER_DBG_IMAGES)

@@ -1,0 +1,130 @@
+From a50881804955a2c600cf2be0ecda19f016ef1515 Mon Sep 17 00:00:00 2001
+From: uraghura <uraghura@cisco.com>
+Date: Thu, 29 Jul 2021 03:37:07 -0700
+Subject: [PATCH] Fix for enabling kdump in NBI boot
+
+Signed-off-by: uraghura <uraghura@cisco.com>
+---
+ scripts/sonic-kdump-config | 71 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 71 insertions(+)
+
+Index: sonic-utilities/scripts/sonic-kdump-config
+===================================================================
+--- sonic-utilities.orig/scripts/sonic-kdump-config
++++ sonic-utilities/scripts/sonic-kdump-config
+@@ -27,9 +27,11 @@ from swsssdk import ConfigDBConnector
+ 
+ aboot_cfg_template ="/host/image-%s/kernel-cmdline"
+ grub_cfg = "/host/grub/grub.cfg"
++nbi_grub_cfg = "/usr/local/bin/sonic-nbi-kernel-cmdline.sh"
+ kdump_cfg = "/etc/default/kdump-tools"
+ kdump_mem_file = "/sys/kernel/kexec_crash_size"
+ machine_cfg = "/host/machine.conf"
++kernel_cmdline_file = "/proc/cmdline"
+ 
+ ## Same as print(), but output to stderr instead of stdout
+ def print_err(*args):
+@@ -389,6 +391,43 @@ def save_config(kdump_enabled, memory, n
+     except Exception as e:
+         print_err("Error [%s] while saving Kdump configuration to startup configuration" % e)
+ 
++## Enable kdump for Cisco NBI image boot
++#
++#  @param verbose If True, the function will display a few additinal information
++#  @return        True if the grub/cmdline cfg has changed or exit if any error encountered
++def kdump_enable_for_nbi_boot(verbose, kdump_enabled, memory, num_dumps, image, cmdline_file):
++    args = ' --update crashkernel=' + str(memory)
++    cmdline_script = cmdline_file + args
++
++    if verbose:
++        print("Enabling kdump for image=[%s]" % image)
++    try:
++        (rc, lines, err_str) = run_command(cmdline_script, use_shell=False)
++    except Exception as exception:
++        print_err(exception)
++        sys.exit(1)
++
++    if rc != 0:
++        print("Error returned from %s script" % cmdline_file)
++        sys.exit(1)
++
++    save_config(kdump_enabled, memory, num_dumps)
++
++    # setting USE_KDUMP in /etc/default/kdump-tools
++    write_use_kdump(1)
++
++    crash_kernel_in_cmdline = search_for_crash_kernel_in_cmdline()
++    if verbose:
++        print("crash_kernel_in_cmdline=[%s]" % crash_kernel_in_cmdline)
++
++    if crash_kernel_in_cmdline is not None:
++        (rc, lines, err_str) = run_command("/usr/sbin/kdump-config load", use_shell=False)
++        if rc != 0:
++            print_err("Error Unable to unload Kdump the kernel '%s'", err_str)
++            sys.exit(1)
++
++    return True
++
+ ## Enable kdump
+ #
+ #  @param verbose If True, the function will display a few additinal information
+@@ -483,6 +522,8 @@ def cmd_kdump_enable(verbose, image=get_
+ 
+     if os.path.exists(grub_cfg):
+         return kdump_enable(verbose, kdump_enabled, memory, num_dumps, image, grub_cfg)
++    elif open(kernel_cmdline_file, 'r').read().find('ksimg=') >= 0:
++        return kdump_enable_for_nbi_boot(verbose, kdump_enabled, memory, num_dumps, image, nbi_grub_cfg)
+     elif open(machine_cfg, 'r').read().find('aboot_platform') >= 0:
+         aboot_cfg = aboot_cfg_template % image
+         return kdump_enable(verbose, kdump_enabled, memory, num_dumps, image, aboot_cfg)
+@@ -498,6 +539,41 @@ def cmd_kdump_enable(verbose, image=get_
+ def cmd_kdump_config_next(verbose):
+     return cmd_kdump_enable(verbose, image=get_next_image())
+ 
++## Disable kdump for NBI image boot
++#
++#  @param verbose If True, the function will display a few additional information
++#  @return        True if the grub/cmdline cfg has changed, and False if it has not
++def kdump_disable_for_nbi_boot(verbose, kdump_enabled, memory, num_dumps, image, cmdline_file):
++    args = ' --delete crashkernel=' + str(memory)
++    cmdline_script = cmdline_file + args
++
++    # Deleting USE_KDUMP in /etc/default/kdump-tools
++    write_use_kdump(0)
++
++    if verbose:
++        print("Disabling kdump for image=[%s]\n" % image)
++
++    try:
++        (rc, lines, err_str) = run_command(cmdline_script, use_shell=False)
++    except Exception as exception:
++        print_err(exception)
++        sys.exit(1)
++
++    if rc != 0:
++        print("Error returned from %s script" % cmdline_file)
++        sys.exit(1)
++
++    if verbose:
++        print("Removed [%s] using %s script" % ("crashkernel="+crash_kernel_mem, cmdline_file))
++
++    if not os.path.exists('/etc/sonic/config_db.json'):
++        print_err("Startup configuration not found, Kdump configuration is not saved")
++        return False
++
++    save_config(kdump_enabled, memory, num_dumps)
++
++    return True 
++
+ ## Disable kdump
+ #
+ #  @param verbose If True, the function will display a few additional information
+@@ -563,6 +639,8 @@ def cmd_kdump_disable(verbose, image=get
+ 
+     if os.path.exists(grub_cfg):
+         return kdump_disable(verbose, kdump_enabled, memory, num_dumps, image, grub_cfg)
++    elif open(kernel_cmdline_file, 'r').read().find('ksimg=') >= 0:
++        return kdump_disable_for_nbi_boot(verbose, kdump_enabled, memory, num_dumps, image, nbi_grub_cfg)
+     elif open(machine_cfg, 'r').read().find('aboot_platform') >= 0:
+         aboot_cfg = aboot_cfg_template % image
+         return kdump_disable(verbose, kdump_enabled, memory, num_dumps, image, aboot_cfg)

@@ -1,0 +1,208 @@
+From ea36d32774bfcdc2cefef86a8982a364712027a9 Mon Sep 17 00:00:00 2001
+From: abhiaga2 <abhiaga2@cisco.com>
+Date: Thu, 22 Jul 2021 11:10:02 -0700
+Subject: [PATCH 1/1] sonic_installer NBI support
+
+Signed-off-by: abhiaga2 <abhiaga2@cisco.com>
+---
+ sonic_installer/bootloader/__init__.py |   2 +
+ sonic_installer/bootloader/nbi.py      | 144 +++++++++++++++++++++++++++++++++
+ sonic_installer/common.py              |  15 ++++
+ 3 files changed, 161 insertions(+)
+ create mode 100644 sonic_installer/bootloader/nbi.py
+
+diff --git a/sonic_installer/bootloader/__init__.py b/sonic_installer/bootloader/__init__.py
+index d2872eb..5a96ada 100644
+--- a/sonic_installer/bootloader/__init__.py
++++ b/sonic_installer/bootloader/__init__.py
+@@ -1,9 +1,11 @@
+ 
++from .nbi import NbiBootloader
+ from .aboot import AbootBootloader
+ from .grub import GrubBootloader
+ from .uboot import UbootBootloader
+ 
+ BOOTLOADERS = [
++    NbiBootloader,
+     AbootBootloader,
+     GrubBootloader,
+     UbootBootloader,
+diff --git a/sonic_installer/bootloader/nbi.py b/sonic_installer/bootloader/nbi.py
+new file mode 100644
+index 0000000..c17cda0
+--- /dev/null
++++ b/sonic_installer/bootloader/nbi.py
+@@ -0,0 +1,144 @@
++"""
++Bootloader implementation for NBI used on Cisco devices
++"""
++
++import base64
++import collections
++import os
++import re
++import subprocess
++import sys
++import zipfile
++
++import click
++
++from M2Crypto import X509
++
++from ..common import (
++   HOST_PATH,
++   IMAGE_DIR_PREFIX,
++   IMAGE_PREFIX,
++   run_command,
++   run_command_output,
++)
++from .bootloader import Bootloader
++
++DEFAULT_NBI_IMAGE = 'sonic-nbi-cisco.bin'
++NBI_AUTOBOOT_TOOL = '/usr/local/bin/autoboot.sh'
++IMAGE_TYPE_NBI = 'nbi'
++
++class NbiBootloader(Bootloader):
++
++    NAME = 'nbi'
++    BOOT_CONFIG_PATH = os.path.join(HOST_PATH, 'boot-config')
++    DEFAULT_IMAGE_PATH = '/tmp/sonic-nbi-cisco.bin'
++
++    # Returns name of current image
++    def get_current_image(self):
++        cmdline = open('/proc/cmdline', 'r')
++        current = re.search("loop=(\S+)/fs.squashfs", cmdline.read()).group(1)
++        cmdline.close()
++        return current.replace(IMAGE_DIR_PREFIX, IMAGE_PREFIX)
++
++    def get_installed_images(self):
++        images = []
++        for filename in os.listdir(HOST_PATH):
++            if filename.startswith(IMAGE_DIR_PREFIX):
++                images.append(filename.replace(IMAGE_DIR_PREFIX, IMAGE_PREFIX))
++        return images
++
++    def get_next_image(self):
++        command = "%s -c" % (NBI_AUTOBOOT_TOOL)
++        image_output = re.search("(\S+)/", run_command_output(command))
++        if image_output:
++            next_image = image_output.group(1).replace(IMAGE_DIR_PREFIX, IMAGE_PREFIX)
++        else:
++            next_image = "NONE"
++        return next_image
++
++    def execute_command(self, image_dir):
++        command = "%s -i \"%s/sonic-nbi-cisco.ks\"" % (NBI_AUTOBOOT_TOOL, image_dir)
++        run_command(command)
++        run_command("rm /host/sonic-nbi-cisco.ks")
++        lnk_cmd = "ln \"/host/%s/sonic-nbi-cisco.ks\" /host/sonic-nbi-cisco.ks" % image_dir
++        run_command(lnk_cmd)
++        return True
++
++    def set_default_image(self, image):
++        image_dir = image.replace(IMAGE_PREFIX, IMAGE_DIR_PREFIX)
++        self.execute_command(image_dir)
++        return True
++
++    def set_next_image(self, image):
++        image_dir = image.replace(IMAGE_PREFIX, IMAGE_DIR_PREFIX)
++        self.execute_command(image_dir)
++        return True
++
++    def install_image(self, image_path):
++        image_output = run_command_output("/usr/local/bin/sonic-nbi-install.sh %s" % image_path)
++        image_dir = image_output.rstrip('\n')
++        self.execute_command(image_dir)
++
++    def remove_image(self, image):
++        nextimage = self.get_next_image()
++        current = self.get_current_image()
++        if image == nextimage:
++            image_dir = current.replace(IMAGE_PREFIX, IMAGE_DIR_PREFIX)
++            self.execute_command(image_dir)
++            click.echo("Set next boot to current image %s" % current)
++
++        image_dir = image.replace(IMAGE_PREFIX, IMAGE_DIR_PREFIX)
++        click.echo('Removing image root filesystem...')
++        rm_cmd = "rm -rf \"%s\"" % (HOST_PATH + '/' + image_dir)
++        run_command(rm_cmd)
++        click.echo('Image removed')
++
++    def get_binary_image_version(self, image_path):
++        p1 = subprocess.Popen(["/usr/local/bin/x_nbi_seg", image_path, "stdout", "3"], stdout=subprocess.PIPE, preexec_fn=None)
++        p2 = subprocess.Popen(["gzip", "-cd"], stdin=p1.stdout, stdout=subprocess.PIPE, preexec_fn=None)
++        with open(os.devnull, 'w') as devnull:
++            p3 = subprocess.Popen(["cpio", "-i", "--to-stdout", ".imagehash"], stdin=p2.stdout, stdout=subprocess.PIPE, stderr=devnull, preexec_fn=None)
++
++        stdout = p3.communicate()[0]
++        p3.wait()
++        str_img = stdout.decode("utf-8", errors="ignore")
++        version_num = str_img.rstrip('\n')
++
++        # If we didn't read a version number, this doesn't appear to be a valid SONiC image file
++        if len(version_num) == 0:
++            return None
++
++        return IMAGE_PREFIX + version_num
++
++    def get_running_image_type(self, image_path):
++        """ Attempt to determine whether we are running an NBI image """
++        cmdline = open('/proc/cmdline', 'r')
++        proc_cmdline = cmdline.read()
++        cmdline.close()
++        if "ksimg=" in proc_cmdline:
++            return IMAGE_TYPE_NBI
++        return None
++
++    # Returns None if image doesn't exist or isn't a regular file
++    def get_binary_image_type(self, image_path):
++        """ Attempt to determine whether we are running an NBI image """
++        if not os.path.isfile(image_path):
++            return None
++    
++        with open(image_path, "rb") as f:
++            magic = f.read(4)
++            if magic == b'6\x13\x03\x1b':
++               return IMAGE_TYPE_NBI
++        return None
++
++    def verify_binary_image(self, image_path):
++        running_image_type = self.get_running_image_type(image_path)
++        binary_image_type = self.get_binary_image_type(image_path)
++        if (binary_image_type != running_image_type):
++            return False
++        return True
++
++    @classmethod
++    def detect(cls):
++        with open('/proc/cmdline') as f:
++            return 'ksimg=' in f.read()
+diff --git a/sonic_installer/common.py b/sonic_installer/common.py
+index 475edb4..7a38bf9 100644
+--- a/sonic_installer/common.py
++++ b/sonic_installer/common.py
+@@ -26,6 +26,21 @@ def run_command(command):
+     if proc.returncode != 0:
+         sys.exit(proc.returncode)
+ 
++# Run bash command, print output to stdout and return output on success
++def run_command_output(command):
++    click.echo(click.style("Command: ", fg='cyan') + click.style(command, fg='green'))
++
++    proc = subprocess.Popen(command, shell=True, text=True, stdout=subprocess.PIPE)
++    (out, err) = proc.communicate()
++
++    click.echo(out)
++
++    if proc.returncode != 0:
++        click.echo(click.style("FAILED!", fg='red'))
++        sys.exit(proc.returncode)
++
++    return str(out)
++
+ # Run bash command and return output, raise if it fails
+ def run_command_or_raise(argv):
+     click.echo(click.style("Command: ", fg='cyan') + click.style(' '.join(argv), fg='green'))
+-- 
+2.7.4
+

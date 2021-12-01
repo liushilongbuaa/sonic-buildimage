@@ -1,0 +1,21 @@
+From 36e5f0849efdb231adbbf8de96aa88997a9d2edf Mon Sep 17 00:00:00 2001
+From: uraghura <uraghura@contoso.com>
+Date: Tue, 17 Aug 2021 12:53:38 +0000
+Subject: [PATCH 1/2] Redmond2 mgmt. phy LED changes
+
+---
+ patch/drivers-net-igb-bcm54616-cisco-changes.patch | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 patch/drivers-net-igb-bcm54616-cisco-changes.patch
+
+diff --git a/patch/drivers-net-igb-bcm54616-cisco-changes.patch b/patch/drivers-net-igb-bcm54616-cisco-changes.patch
+new file mode 120000
+index 0000000..7de45a6
+--- /dev/null
++++ b/patch/drivers-net-igb-bcm54616-cisco-changes.patch
+@@ -0,0 +1 @@
++../../sonic-linux-kernel.patch/patch/drivers-net-igb-bcm54616-cisco-changes.patch
+\ No newline at end of file
+-- 
+2.20.1
+

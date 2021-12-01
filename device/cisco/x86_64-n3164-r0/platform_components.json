@@ -1,0 +1,22 @@
+{
+	"chassis":{
+		"N3K-C3164Q-40GE":{
+			"component":{
+				"IOFPGA":{
+				},
+				"MIFPGA-1":{
+				},
+				"MIFPGA-2":{
+				},
+				"Golden BIOS":{
+				},
+				"Primary BIOS":{
+			        }
+
+
+			}
+
+		}
+	}
+
+}

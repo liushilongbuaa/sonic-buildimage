@@ -1,0 +1,188 @@
+From 520378f4a9d4dbeaa2da49fada8dc7a513ecb042 Mon Sep 17 00:00:00 2001
+From: abhiaga2 <abhiaga2@cisco.com>
+Date: Sat, 24 Jul 2021 03:10:06 -0700
+Subject: [PATCH 1/1] fast-reboot changes for Cisco NBI image and Cisco ASIC
+
+Signed-off-by: abhiaga2 <abhiaga2@cisco.com>
+---
+ scripts/fast-reboot | 89 ++++++++++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 68 insertions(+), 21 deletions(-)
+
+Index: sonic-utilities/scripts/fast-reboot
+===================================================================
+--- sonic-utilities.orig/scripts/fast-reboot
++++ sonic-utilities/scripts/fast-reboot
+@@ -12,7 +12,8 @@ FORCE=no
+ IGNORE_ASIC=no
+ IGNORE_DB_CHECK=no
+ STRICT=no
+-REBOOT_METHOD="/sbin/kexec -e"
++KEXEC_PRG=/sbin/kexec
++REBOOT_METHOD="$KEXEC_PRG -e"
+ ASSISTANT_IP_LIST=""
+ ASSISTANT_SCRIPT="/usr/local/bin/neighbor_advertiser"
+ WATCHDOG_UTIL="/usr/local/bin/watchdogutil"
+@@ -52,7 +53,9 @@ function debug()
+     if [[ x"${VERBOSE}" == x"yes" ]]; then
+         echo $(date) $@
+     fi
+-    logger "$@"
++    if [ -e /dev/log ]; then
++        logger "$@"
++    fi
+ }
+ 
+ function showHelpAndExit()
+@@ -64,7 +67,7 @@ function showHelpAndExit()
+     echo "    -i    : force execution - ignore ASIC MD5-checksum-verification"
+     echo "    -d    : force execution - ignore database integrity check"
+     echo "    -r    : reboot with /sbin/reboot"
+-    echo "    -k    : reboot with /sbin/kexec -e [default]"
++    echo "    -k    : reboot with $KEXEC_PRG -e [default]"
+     echo "    -x    : execute script with -x flag"
+     echo "    -c    : specify control plane assistant IP list"
+     echo "    -s    : strict mode: do not proceed without:"
+@@ -97,7 +100,7 @@ function parseOptions()
+                 REBOOT_METHOD="/sbin/reboot"
+                 ;;
+             k )
+-                REBOOT_METHOD="/sbin/kexec -e"
++                REBOOT_METHOD="$KEXEC_PRG -e"
+                 ;;
+             x )
+                 set -x
+@@ -119,7 +122,7 @@ function common_clear()
+ {
+     debug "${REBOOT_TYPE} failure ($?) cleanup ..."
+ 
+-    /sbin/kexec -u || /bin/true
++    $KEXEC_PRG -u || /bin/true
+ 
+     teardown_control_plane_assistant
+ }
+@@ -312,23 +315,55 @@ function setup_reboot_variables()
+     HWSKU=$(show platform summary --json | python -c 'import sys, json; print(json.load(sys.stdin)["hwsku"])')
+     NEXT_SONIC_IMAGE=$(sonic-installer list | grep "Next: " | cut -d ' ' -f 2)
+     IMAGE_PATH="/host/image-${NEXT_SONIC_IMAGE#SONiC-OS-}"
+-    if grep -q aboot_platform= /host/machine.conf; then
+-        if is_secureboot; then
+-            KERNEL_IMAGE=""
+-            BOOT_OPTIONS="SONIC_BOOT_TYPE=${BOOT_TYPE_ARG} secure_boot_enable=1"
+-        else
+-            KERNEL_IMAGE="$(ls $IMAGE_PATH/boot/vmlinuz-*)"
+-            BOOT_OPTIONS="$(cat "$IMAGE_PATH/kernel-cmdline" | tr '\n' ' ') SONIC_BOOT_TYPE=${BOOT_TYPE_ARG}"
++
++    if grep -q 'ksimg=' /proc/cmdline ; then
++      sonic_image_type='nbi'
++    else
++      sonic_image_type='onie'
++    fi
++
++    if [ "$sonic_image_type" = 'nbi' ]; then
++        SONIC_NBI_KS=$(echo $IMAGE_PATH | sed "s/$/\/sonic-nbi-cisco.ks/")
++        KSIMG=$(echo $SONIC_NBI_KS | sed "s/\/host/ksimg=bootflash:/")
++        CRDIDX=$(cat /proc/cmdline | sed -n "s/.*\(card_index=[0-9]*\).*/\1/p")
++        CONSOLE_SPEED=$(cat /proc/cmdline | sed -n "s/.*\(console=ttyS0,[0-9]*n8nn\).*/\1/p")
++        MPAIDX=$(cat /proc/cmdline | sed -n "s/.*\(mpa_index=[0-9]*\).*/\1/p")
++        /usr/local/bin/sonic-nbi-ks-expand.sh $SONIC_NBI_KS /tmp/nbi-ks-expand
++        if [ $? -ne 0 ] ; then
++           echo "failed to get kernel and initrd from nbi runtime image"
++           exit
+         fi
+-    elif grep -q onie_platform= /host/machine.conf; then
+-        KERNEL_OPTIONS=$(cat /host/grub/grub.cfg | sed "/$NEXT_SONIC_IMAGE'/,/}/"'!'"g" | grep linux)
+-        KERNEL_IMAGE="/host$(echo $KERNEL_OPTIONS | cut -d ' ' -f 2)"
+-        BOOT_OPTIONS="$(echo $KERNEL_OPTIONS | sed -e 's/\s*linux\s*/BOOT_IMAGE=/') SONIC_BOOT_TYPE=${BOOT_TYPE_ARG}"
++        KERNEL_IMAGE="/tmp/nbi-ks-expand/vmlinuz"
++        acpi_rsdp=""
++        for dir in /sys/firmware/memmap/* ; do
++          mem_type="$(cat $dir/type)"
++          if [ "$mem_type" = "ACPI Tables" ] ; then
++              rsdp_start="$(cat $dir/start)"
++              acpi_rsdp="acpi_rsdp=$rsdp_start"
++              break
++          fi
++        done
++        BOOT_OPTIONS="$CONSOLE_SPEED $CRDIDX $MPAIDX $KSIMG $(tr -d '\0' < /tmp/nbi-ks-expand/cmdline) SONIC_BOOT_TYPE=${BOOT_TYPE_ARG} noefi $acpi_rsdp"
++        INITRD="/tmp/nbi-ks-expand/initrd.img"
+     else
+-        error "Unknown bootloader. ${REBOOT_TYPE} is not supported."
+-        exit "${EXIT_NOT_SUPPORTED}"
++        if grep -q aboot_platform= /host/machine.conf; then
++            if is_secureboot; then
++                KERNEL_IMAGE=""
++                BOOT_OPTIONS="SONIC_BOOT_TYPE=${BOOT_TYPE_ARG} secure_boot_enable=1"
++            else
++                KERNEL_IMAGE="$(ls $IMAGE_PATH/boot/vmlinuz-*)"
++                BOOT_OPTIONS="$(cat "$IMAGE_PATH/kernel-cmdline" | tr '\n' ' ') SONIC_BOOT_TYPE=${BOOT_TYPE_ARG}"
++            fi
++        elif grep -q onie_platform= /host/machine.conf; then
++            KERNEL_OPTIONS=$(cat /host/grub/grub.cfg | sed "/$NEXT_SONIC_IMAGE'/,/}/"'!'"g" | grep linux)
++            KERNEL_IMAGE="/host$(echo $KERNEL_OPTIONS | cut -d ' ' -f 2)"
++            BOOT_OPTIONS="$(echo $KERNEL_OPTIONS | sed -e 's/\s*linux\s*/BOOT_IMAGE=/') SONIC_BOOT_TYPE=${BOOT_TYPE_ARG}"
++        else
++            error "Unknown bootloader. ${REBOOT_TYPE} is not supported."
++            exit "${EXIT_NOT_SUPPORTED}"
++        fi
++        INITRD=$(echo $KERNEL_IMAGE | sed 's/vmlinuz/initrd.img/g')
+     fi
+-    INITRD=$(echo $KERNEL_IMAGE | sed 's/vmlinuz/initrd.img/g')
+ }
+ 
+ function check_docker_exec()
+@@ -414,14 +449,14 @@ function load_aboot_secureboot_kernel()
+ 
+ function load_kernel() {
+     # Load kernel into the memory
+-    /sbin/kexec -l "$KERNEL_IMAGE" --initrd="$INITRD" --append="$BOOT_OPTIONS"
++    $KEXEC_PRG -l "$KERNEL_IMAGE" --initrd="$INITRD" --append="$BOOT_OPTIONS"
+ }
+ 
+ function unload_kernel()
+ {
+     # Unload the previously loaded kernel if any loaded
+     if [[ "$(cat /sys/kernel/kexec_loaded)" -eq 1 ]]; then
+-        /sbin/kexec -u
++        $KEXEC_PRG -u
+     fi
+ }
+ 
+@@ -484,6 +519,12 @@ function handle_slb_neighbors()
+ }
+ 
+ # main starts here
++if grep -q 'ksimg=' /proc/cmdline ; then
++  sonic_image_type='nbi'
++  KEXEC_PRG=/sbin/kexec-cisco
++else
++  sonic_image_type='onie'
++fi
+ parseOptions $@
+ 
+ # Check root privileges
+@@ -499,11 +540,13 @@ sonic_asic_type=$(sonic-cfggen -y /etc/s
+ BOOT_TYPE_ARG="cold"
+ case "$REBOOT_TYPE" in
+     "fast-reboot")
++        REBOOT_METHOD="$KEXEC_PRG -e"
+         BOOT_TYPE_ARG=$REBOOT_TYPE
+         trap clear_fast_boot EXIT HUP INT QUIT TERM KILL ABRT ALRM
+         sonic-db-cli STATE_DB SET "FAST_REBOOT|system" "1" "EX" "180" &>/dev/null
+         ;;
+     "warm-reboot")
++        REBOOT_METHOD="$KEXEC_PRG -e"
+         check_warm_restart_in_progress
+         if [[ "$sonic_asic_type" == "mellanox" ]]; then
+             REBOOT_TYPE="fastfast-reboot"
+@@ -574,6 +617,11 @@ else
+     load_kernel
+ fi
+ 
++#remove temporary directory
++if [ "$sonic_image_type" = 'nbi' ]; then
++  rm -fr /tmp/nbi-ks-expand
++fi
++
+ if [[ "$REBOOT_TYPE" = "fast-reboot" ]]; then
+     # Dump the ARP and FDB tables to files also as default routes for both IPv4 and IPv6
+     # into /host/fast-reboot

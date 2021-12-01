@@ -338,6 +338,18 @@ start() {
         fi
     fi
 {%- endif %}
+{%- if docker_container_name == "pmon" %}
+    # Cisco : platform modules dependencies for pmon docker
+    if [ -f /usr/local/bin/pfm_util ]; then
+        PMON_MNT=$PMON_MNT" -v /usr/local/bin/pfm_util:/usr/local/bin/pfm_util:ro "
+    fi
+    if [ -f /usr/local/bin/act2_util ]; then
+        PMON_MNT=$PMON_MNT" -v /usr/local/bin/act2_util:/usr/local/bin/act2_util:ro "
+    fi
+    if [ -d /usr/lib/python2.7/dist-packages/cisco_sfp ]; then
+        PMON_MNT=$PMON_MNT" -v /usr/lib/python2.7/dist-packages/cisco_sfp:/usr/lib/python2.7/dist-packages/cisco_sfp:ro "
+    fi
+{%- endif %}
 {%- if sonic_asic_platform == "mellanox" %}
     # TODO: Mellanox will remove the --tmpfs exception after SDK socket path changed in new SDK version
 {%- endif %}
@@ -375,6 +387,7 @@ start() {
 {%- endif %}
 {%- if docker_container_name == "pmon" %}
     -v /usr/share/sonic/firmware:/usr/share/sonic/firmware:rw \
+    $PMON_MNT \
 {%- endif %}
 {%- if docker_container_name == "swss" %}
         -e ASIC_VENDOR={{ sonic_asic_platform }} \

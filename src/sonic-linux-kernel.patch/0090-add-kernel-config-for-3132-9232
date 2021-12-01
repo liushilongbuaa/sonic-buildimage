@@ -1,9 +1,18 @@
-Index: sonic-linux-kernel/patch/kconfig-exclusions
-===================================================================
---- sonic-linux-kernel.orig/patch/kconfig-exclusions
-+++ sonic-linux-kernel/patch/kconfig-exclusions
-@@ -7,6 +7,8 @@ CONFIG_STRICT_DEVMEM
- # Unset X86_PAT according to Broadcom's requirement
+From cbe35502c0085731381d6eb9c4e28deac122dfae Mon Sep 17 00:00:00 2001
+From: uraghura <uraghura@cisco.com>
+Date: Mon, 16 Aug 2021 07:56:50 -0700
+Subject: [PATCH 2/2] Add kernel config for 3132 9200
+
+---
+ patch/kconfig-exclusions |  2 ++
+ patch/kconfig-inclusions | 11 +++++++++++
+ 2 files changed, 13 insertions(+)
+
+diff --git a/patch/kconfig-exclusions b/patch/kconfig-exclusions
+index 6d4f0e6..fa21b96 100644
+--- a/patch/kconfig-exclusions
++++ b/patch/kconfig-exclusions
+@@ -12,6 +12,8 @@ CONFIG_CGROUP_NET_PRIO
  CONFIG_X86_PAT
  CONFIG_MLXSW_PCI
  CONFIG_THERMAL_STATISTICS
@@ -12,10 +21,10 @@ Index: sonic-linux-kernel/patch/kconfig-exclusions
  
  [arm64]
  
-Index: sonic-linux-kernel/patch/kconfig-inclusions
-===================================================================
---- sonic-linux-kernel.orig/patch/kconfig-inclusions
-+++ sonic-linux-kernel/patch/kconfig-inclusions
+diff --git a/patch/kconfig-inclusions b/patch/kconfig-inclusions
+index e57063b..fd26d79 100644
+--- a/patch/kconfig-inclusions
++++ b/patch/kconfig-inclusions
 @@ -20,6 +20,11 @@ CONFIG_GPIO_SYSFS=y
  CONFIG_GPIO_SCH=m
  # For Dell Z9100
@@ -28,3 +37,19 @@ Index: sonic-linux-kernel/patch/kconfig-inclusions
  # For Ingrasys S9100
  CONFIG_I2C_GPIO=m
  CONFIG_GPIO_PCA953X=m
+@@ -55,6 +60,12 @@ CONFIG_MELLANOX_PLATFORM=y
+ CONFIG_MLXREG_HOTPLUG=m
+ CONFIG_MLXREG_IO=m
+ CONFIG_MAX1363=m
++CONFIG_MTD=y
++CONFIG_MTD_SPI_NOR=y
++CONFIG_MTD_SPI_NOR_USE_4K_SECTORS=y
++CONFIG_SPI_INTEL_SPI=y
++CONFIG_SPI_INTEL_SPI_PCI=y
++CONFIG_SPI_INTEL_SPI_PLATFORM=y
+ 
+ [arm64]
+ 
+-- 
+2.7.4
+
