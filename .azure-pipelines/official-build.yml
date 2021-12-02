@@ -9,7 +9,7 @@ schedules:
   branches:
     include:
     - master
-    - 202???
+    - 20[2,3]???
   always: true
 - cron: "0 4 * * *"
   displayName: nightly build for release
