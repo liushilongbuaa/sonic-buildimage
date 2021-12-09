@@ -46,8 +46,11 @@ steps:
         if ( ${base_branch} -eq "internal-master" ) {
           $base_branch="internal"
         }
-        if ( ${base_branch} -eq "internal-202106" -Or ${base_branch} -eq "internal-202111") {
-          $remote_repo="target-ms"
+        $sp_branch=@($(MS_BRANCHES))
+        foreach ($branch in $sp_branch){
+          if ( "${target_branch}" -eq "$branch" ){
+            $remote_repo="target-ms"
+          }
         }
         git ls-remote origin refs/heads/${base_branch}; if (-not $?) { Write-Error "Base branch not found" ;exit 1 }
         git ls-remote $remote_repo refs/heads/${target_branch}; if (-not $?) { Write-Error "Target branch not found" ;exit 1 }
@@ -57,6 +60,7 @@ steps:
         $post_tag="${base_branch}-"+$(Get-Date -format "yyyyMMdd-HHmm")+".post-merge"
         git tag ${curr_tag}
 
+        Write-Host "========Merging from $remote_repo $target_branch========"
         git pull $remote_repo ${target_branch} --no-edit; if (-not $?) { git merge --abort; exit 1 }
         $head_tag=git tag --contains HEAD
 
