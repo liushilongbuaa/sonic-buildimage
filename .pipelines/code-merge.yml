@@ -47,9 +47,7 @@ steps:
           $base_branch="internal"
         }
         $sp_branch=@(${env:MS_BRANCHES}.split(','))
-        Write-Host ================== $sp_branch =======================
         foreach ($branch in $sp_branch){
-          Write-Host ------------ $branch --------------------
           if ( "${source_branch}" -eq "$branch" ){
             $remote_repo="source-ms"
           }
