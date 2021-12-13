@@ -46,7 +46,7 @@ steps:
         if ( ${base_branch} -eq "internal-master" ) {
           $base_branch="internal"
         }
-        $sp_branch=@(${env:MS_BRANCHES}.split(','))
+        $sp_branch=${env:MS_BRANCHES}.split(',')
         foreach ($branch in $sp_branch){
           if ( "${source_branch}" -eq "$branch" ){
             $remote_repo="source-ms"
