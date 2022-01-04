@@ -1,0 +1,27 @@
+pr: none
+trigger: none
+
+variables:
+- name: PATCHFILE
+  value: $(patch_file)
+
+stages:
+- stage: build
+  jobs:
+  - job: build
+    pool:
+      vmImage: 'ubuntu-20.04'
+
+    steps:
+    - checkout: self
+      submodules: recursive
+      clean: true
+    - script: |
+        set -ex
+        echo $(PATCHFILE)
+        sed -i "s/$(PATCHFILE)//g" src/sonic-linux-kernel/patch/series
+        git status
+        git add .
+        git commit -m "remove patch file in series"
+        git log -n 3
+        git diff HEAD~
