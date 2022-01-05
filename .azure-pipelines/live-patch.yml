@@ -9,9 +9,7 @@ stages:
 - stage: build
   jobs:
   - job: build
-    pool:
-      vmImage: 'ubuntu-20.04'
-
+    pool: sonicbld
     steps:
     - checkout: self
       submodules: recursive
