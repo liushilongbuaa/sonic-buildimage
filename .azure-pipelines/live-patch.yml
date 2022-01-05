@@ -23,3 +23,14 @@ stages:
         git commit -m "remove patch file in series"
         git log -n 3
         git diff HEAD~
+        make configure PLATFORM=vs ENABLE_DOCKER_BASE_PULL=y
+        make target/sonic-vs.img.gz ENABLE_DOCKER_BASE_PULL=y SONIC_CONFIG_PRINT_DEPENDENCIES=y SONIC_BUILD_JOBS=$(nproc)
+    - script: |
+        set -ex
+        git clone https://github.com/dynup/kpatch.git
+        pushd kpatch
+        git checkout v0.9.5
+        make
+        popd
+        
+        SONIC_RUN_CMDS="./kpatch/kpatch-build/kpatch-build -t vmlinux -v src/sonic-linux-kernel/linux-4.9.246/debian/linux-image-4.9.0-14-2-amd64-dbg/usr/lib/debug/boot/vmlinux-4.9.0-14-2-amd64 -s src/sonic-linux-kernel/linux-4.9.246/ -c src/sonic-linux-kernel/linux-4.9.246/debian/build/build_amd64_none_amd64/.config src/sonic-linux-kernel/patch/$(PATCHFILE)" make sonic-slave-run NOJESSIE=1 NOSTRETCH=1 NOBUSTER=1
