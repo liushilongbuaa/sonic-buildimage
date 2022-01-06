@@ -19,6 +19,7 @@ stages:
         echo $(PATCHFILE)
         grep $(PATCHFILE) src/sonic-linux-kernel/patch/series
         sed -i 's/$(PATCHFILE)//g' src/sonic-linux-kernel/patch/series
+        pushd src/sonic-linux-kernel
         git status
         git config --global user.email "local@example.com"
         git config --global user.name "local"
@@ -26,6 +27,9 @@ stages:
         git commit -m "remove patch file in series"
         git log -n 3
         git diff HEAD~
+        popd
+        git add .
+        git commit -m "update src/sonic-linux-kernel"
         make configure PLATFORM=vs ENABLE_DOCKER_BASE_PULL=y
         make target/debs/stretch/linux-headers-4.9.0-14-2-amd64_4.9.246-2_amd64.deb ENABLE_DOCKER_BASE_PULL=y SONIC_CONFIG_PRINT_DEPENDENCIES=y SONIC_BUILD_JOBS=$(nproc)
     - script: |
