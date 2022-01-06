@@ -17,6 +17,7 @@ stages:
     - script: |
         set -ex
         echo $(PATCHFILE)
+        grep $(PATCHFILE) src/sonic-linux-kernel/patch/series
         sed -i "s/$(PATCHFILE)//g" src/sonic-linux-kernel/patch/series
         git status
         git config --global user.email "local@example.com"
