@@ -19,6 +19,8 @@ stages:
         echo $(PATCHFILE)
         sed -i "s/$(PATCHFILE)//g" src/sonic-linux-kernel/patch/series
         git status
+        git config --global user.email "local@example.com"
+        git config --global user.name "local"
         git add .
         git commit -m "remove patch file in series"
         git log -n 3
