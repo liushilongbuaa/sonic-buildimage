@@ -23,9 +23,17 @@ parameters:
   - broadcom
   - mellanox
   - marvell-armhf
+  - cisco-8000
 - name: 'trusty8LinkPath'
   type: string
   default: 'default'
+
+resources:
+  repositories:
+  - repository: cisco-8000
+    type: github
+    name: Cisco-8000-sonic/platform-cisco-8000
+    endpoint: cisco-connection
 
 variables:
 - group: SONIC-BUILD-VG-1
@@ -55,7 +63,13 @@ stages:
         - checkout: self
           clean: true
           submodules: recursive
+          path: s
           displayName: 'Checkout code'
+        - checkout: cisco-8000
+          condition: eq(variables.GROUP_NAME, 'cisco-8000')
+          submodules: recursive
+          path: s/platform/cisco-8000
+          displayName: 'Checkout cisco-8000'
         - script: |
             git checkout -b $(Build.SourceBranchName)
             . functions.sh
@@ -273,3 +287,27 @@ stages:
             echo "INCLUDE_SFLOW = y" > rules/config.user
             OPTIONS="$BUILD_OPTIONS PASSWORD=$PASSWORD"
             make $OPTIONS target/sonic-marvell-armhf.bin
+        - name: cisco-8000
+          variables:
+            TERM: ''
+          steps:
+          - script: |
+              cisco_ref=$(cat platform/checkout/cisco-8000.ini | grep '^ref=' | cut -d= -f2)
+              echo "The cisco 8000 release version is $cisco_ref"
+              echo "##vso[task.setvariable variable=cisco.ref]$cisco_ref"
+            displayName: 'Export cisco release version'
+          - task: DownloadGitHubRelease@0
+            inputs:
+              connection: cisco-connection
+              userRepository: Cisco-8000-sonic/platform-cisco-8000
+              defaultVersionType: specificTag
+              version: $(cisco.ref)
+              itemPattern: 'artifactory-*.tar.gz'
+              downloadPath: '$(System.ArtifactsDirectory)'
+          - script: |
+              tar xvfz $(System.ArtifactsDirectory)/artifactory-*.tar.gz -C platform/cisco-8000
+            displayName: 'Setup cisco artifacts'
+          - script: |
+              OPTIONS="$BUILD_OPTIONS ENABLE_NAT=n PASSWORD=$PASSWORD"
+              make $OPTIONS target/sonic-cisco-8000.bin
+            displayName: JobScript
