@@ -1,0 +1,70 @@
+uint32 get_3132ge_40G_port(int front_port)
+{
+uint32 port_list[32] =
+  {1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49, 53, 57, 61,
+   65, 69, 73, 77, 81, 85, 89, 93, 97, 98, 99, 100, 101, 102, 103, 104};
+
+  if (front_port < 1 | front_port > 32) {
+    return 0;
+  }
+
+  return port_list[front_port - 1];
+}
+
+int phy_bcm84328_GPIO_write(uint32 unit, uint32 port, uint32 status)
+{
+uint32 BCM_PORT_PHY_CLAUSE45 = 0x4;
+uint32 BCM_USD_PHY_LED_LINK_MASK = 0x3;
+uint32 BCM_USD_PHY_GPIO_ENABLE_MASK = 0x30;
+uint32 reg_addr;
+int rc;
+
+/*
+uint32 BCM_PMD_DEVICE = 0x1;
+uint32 BCM_USD_PHY_GPIO_REG = 0xC80E;
+  reg_addr = BCM_PORT_PHY_CLAUSE45_ADDR( BCM_PMD_DEVICE, BCM_USD_PHY_GPIO_REG );
+*/
+  reg_addr = BCM_PORT_PHY_CLAUSE45_ADDR( 0x1, 0xC80E );
+  rc = bcm_port_phy_modify( unit, port, BCM_PORT_PHY_CLAUSE45, reg_addr,
+                status, BCM_USD_PHY_LED_LINK_MASK|BCM_USD_PHY_GPIO_ENABLE_MASK);
+
+  return rc;
+}
+
+
+int main()
+{
+uint32 BCM_USD_PHY_LED_GREEN = 0x2;
+uint32 BCM_USD_PHY_LED_OFF= 0x3;
+uint32 BCM_USD_PHY_LED_AMBER = 0x0;
+uint32 unit = 0;
+uint32 port;
+uint32 port_led_color;
+int link_status;
+int front_port;
+int rc;
+
+  for (front_port = 1; front_port <= 32; front_port++) {
+    port = get_3132ge_40G_port(front_port);
+    rc = bcm_port_link_status_get(unit, port, &link_status);
+/*
+    print rc;
+    print front_port;
+    print port;
+    print link_status;
+*/
+  if (link_status == 1) {
+    port_led_color = BCM_USD_PHY_LED_GREEN;
+  } else {
+    port_led_color = BCM_USD_PHY_LED_OFF;
+  }
+  rc = phy_bcm84328_GPIO_write(unit, port, port_led_color);
+/*
+  print rc;
+  print port_led_color;
+*/
+  }
+  return 0;
+}
+
+main();

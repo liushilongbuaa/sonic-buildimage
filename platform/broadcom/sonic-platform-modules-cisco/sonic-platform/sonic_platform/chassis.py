@@ -10,7 +10,7 @@
 
 try:
     import sys
-    import os.path
+    import os
     from sonic_platform_base.chassis_base import ChassisBase
     import sonic_platform.utils as pltm_utils
     from sonic_py_common.logger import Logger
@@ -52,6 +52,7 @@ class Chassis(ChassisBase):
         
         # Initialize Platform name
         self.platform_name = device_info.get_platform()
+        self.name = self.platform_name
         self.sfp_init_done = False
         self._watchdog = None
         self._eeprom = None
@@ -63,8 +64,8 @@ class Chassis(ChassisBase):
         self.initialize_fan()
         self.initialize_eeprom()
         self.initialize_thermals()
-        #anyways ledd daemon uses ledControl from plugins
-        self.initialize_port_leds() 
+        if self.platform_name != 'x86_64-m3000-r1' and  self.platform_name != 'x86_64-m3000-r0':
+            self.initialize_port_leds()
         self.initialize_sfps()
         self.initizalize_system_led()
 
@@ -110,10 +111,9 @@ class Chassis(ChassisBase):
 
     def initialize_eeprom(self):
         # Initialize EEPROM
-        self._eeprom = Eeprom()
+        self._eeprom = Eeprom(self.global_parameters)
         if self._eeprom is not None:
             # Get chassis name and model from eeprom
-            self.name = self._eeprom.get_product_name()
             self.model = self._eeprom.get_part_number()
             self.serial = self._eeprom.get_serial_number()
             self.base_mac = self._eeprom.get_base_mac()
@@ -139,6 +139,8 @@ class Chassis(ChassisBase):
     def initialize_sfps(self):
         from sonic_platform.sfp import Sfp
         from sonic_platform.sfputil import SfpUtil
+        from sonic_platform.sfputil_n3132gx import SfpUtilN3132gx
+        from sonic_platform.sfputil_n3132ge import SfpUtilN3132ge
 
         if self.platform_name not in DEVICE_DATA: 
             return
@@ -160,8 +162,13 @@ class Chassis(ChassisBase):
                 self.num_fp = 0
         else:
             self.num_fp = 0
-
-        self.platform_sfputil=SfpUtil(self.fp_index_start, self.num_fp, self.global_parameters, sfps_data)
+        if (self.global_parameters.get_param(PlatformGlobalData.KEY_N9K,1) == 1):
+            self.platform_sfputil=SfpUtil(self.fp_index_start, self.num_fp, self.global_parameters, sfps_data)
+        else:
+            if self.name == "x86_64-m3000-r0":
+                self.platform_sfputil=SfpUtilN3132ge(self.fp_index_start, self.num_fp, self.global_parameters, sfps_data)
+            else :
+                self.platform_sfputil=SfpUtilN3132gx(self.fp_index_start, self.num_fp, self.global_parameters, sfps_data)
 
         for qsfp_port_index in self.platform_sfputil.qsfp_ports:
             qsfp_port = Sfp(qsfp_port_index,SfpUtil.SUPPORTED_QSFP_PORT_TYPES[0], self.global_parameters, self.platform_sfputil)
@@ -315,7 +322,7 @@ class Chassis(ChassisBase):
         Returns:
             bool: True if system LED state is set successfully, False if not
         """
-        return False if not self._status_led else self._status_led.set_status(color)
+        return False if self._status_led is None else self._status_led.set_status(color)
 
     def get_status_led(self):
         """
@@ -324,9 +331,13 @@ class Chassis(ChassisBase):
             A string, one of the valid LED color strings which could be vendor
             specified.
         """
-        return None if not self._status_led else self._status_led.get_status()
+        return None if self._status_led is None else self._status_led.get_status()
 
     def initialize_reboot_shutdown_handlers(self):
+        if (self.global_parameters.get_param(PlatformGlobalData.KEY_N9K,1) == 1):
+            self.initialize_reboot_shutdown_handlers_n9k()
+    
+    def initialize_reboot_shutdown_handlers_n9k(self):
         _reboot_gpio_path = "/sys/class/gpio/gpio{}/value"
         _shutdown_gpio_path = "/sys/class/gpio/gpio{}/value"
 
@@ -345,8 +356,27 @@ class Chassis(ChassisBase):
 
         if shutdown_gpio_num != 0:
             self.shutdown_gpio_path = _shutdown_gpio_path.format(shutdown_gpio_num)
-
     def reboot(self):
+        if (self.global_parameters.get_param(PlatformGlobalData.KEY_N9K,1) == 1):
+            self.reboot_n9k()
+        else :
+            self.reboot_n3k()
+    
+    def shutdown(self):
+        if (self.global_parameters.get_param(PlatformGlobalData.KEY_N9K,1) == 1):
+            self.shutdown_n9k()
+        else :
+            self.shutdown_n3k()
+
+    def reboot_n3k(self):
+        cmd = 'echo b > /proc/sysrq-trigger'
+        os.system(cmd)
+
+    def shutdown_n3k(self):
+        cmd = 'echo o > /proc/sysrq-trigger'
+        os.system(cmd)
+
+    def reboot_n9k(self):
         """
         Reboots/power-cycle the system immediately
         Returns:
@@ -354,7 +384,7 @@ class Chassis(ChassisBase):
         """
         pltm_utils.write_file(self.reboot_gpio_path, 1, True) 
 
-    def shutdown(self):
+    def shutdown_n9k(self):
         """
         Shuts down / poweroff  the system immediately
         Returns:

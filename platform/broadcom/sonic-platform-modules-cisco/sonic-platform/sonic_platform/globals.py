@@ -21,6 +21,7 @@ class PlatformGlobalData():
     KEY_FORWARD_FAN_CURVE_SLOPE = 'F_fan_curve_slope'
     KEY_REVERSE_FAN_CURVE_SLOPE = 'R_fan_curve_slope'
     KEY_PSU_EEPROM_DATA_FORMAT = 'psu_eeprom_data_format'
+    KEY_N9K = 'isN9k'
     KEY_BLUE_FANS_INLET_TEMP_THRESHOLD = 'blue_fans_inlet_temp_threshold'
     KEY_RED_FANS_INLET_TEMP_THRESHOLD = 'red_fans_inlet_temp_threshold'
     KEY_THERMAL_HIGH_THRESHOLD_HYSTERESIS = 'thermal_high_thresh_hysteresis'
@@ -29,7 +30,6 @@ class PlatformGlobalData():
     KEY_SHUTDOWN_GPIO_NUM = 'shutdown_gpio'
     KEY_XCVR_HIGH_POWER_CLASS = 'transceiver_enable_high_power_class'
     KEY_MAX_SUPPLIED_POWER = 'max_supplied_power'
-
 
     DICT_GLOBAL_KEY_NOT_AVAILABLE = 'N/A'
 

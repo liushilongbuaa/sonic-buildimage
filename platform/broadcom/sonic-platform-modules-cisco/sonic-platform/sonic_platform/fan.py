@@ -32,6 +32,7 @@ class Fan(FanBase):
 
         self.max_speed = 255
         self.min_speed = 0
+        self._target_speed = None
         self.is_psu_fan = psu_fan
         self.psu = psu
         self.platform_data = platform_data
@@ -61,19 +62,20 @@ class Fan(FanBase):
             self.g_led_path = None
             self.r_led_path = None
         else:
-            self.fan_path = self._fan_path.format(fan_data['bus'], fan_data['addr'])
-            self.status_path = self._status_path.format(self.index)
-            self.speed_path  = self._speed_path.format(self.index)
-            self.pwm_path = None
-            self.pre_path = self._gpio_path.format(fan_data['gpio_presence'])
-            self.dir_path = self._gpio_path.format(fan_data['gpio_direction'])
-            self.g_led_path =self._g_led_path.format(self.drawer_index)
-            self.r_led_path =self._r_led_path.format(self.drawer_index)
             self._name = "FAN {}-{}".format(self.drawer_index,self.index)
+            self.pwm_path = None
             if self.fan_pwm_path_format == 1: #use fan index to control PWM
                 self.pwm_path = self._pwm_path.format(self.index)
             elif self.fan_pwm_path_format == 2: #use drawer index to control PWM
                 self.pwm_path = self._pwm_path.format(self.drawer_index)
+                self.index = ((self.drawer_index-1)*2) + self.index
+            self.fan_path = self._fan_path.format(fan_data['bus'], fan_data['addr'])
+            self.status_path = self._status_path.format(self.index)
+            self.speed_path  = self._speed_path.format(self.index)
+            self.pre_path = self._gpio_path.format(fan_data['gpio_presence'])
+            self.dir_path = self._gpio_path.format(fan_data['gpio_direction'])
+            self.g_led_path =self._g_led_path.format(self.drawer_index)
+            self.r_led_path =self._r_led_path.format(self.drawer_index)
 
 
     def get_name(self):
@@ -128,7 +130,7 @@ class Fan(FanBase):
     #Platform specific code
     def rpm2pwm(self, rpm):
         pwm = 0
-        if self.index == 1:
+        if (self.index%2) == 1:
             f_fan_curve_slope = self.platform_data.get_param(PlatformGlobalData.KEY_FORWARD_FAN_CURVE_SLOPE,1)
             pwm = int(rpm / f_fan_curve_slope)
         else:
@@ -146,7 +148,8 @@ class Fan(FanBase):
         pwm = 0
         if self.get_presence() :
             if self.is_psu_fan and self.psu is not None and self.psu['is_fan_sw_controllable'] == False:
-                    return "N/A"
+                return "N/A"
+                
             #Get speed/rpm
             for dirname in os.listdir(self.fan_path):
                 if fnmatch.fnmatch(dirname, 'hwmon?'):
@@ -155,6 +158,8 @@ class Fan(FanBase):
             if filename is None:
                 return False
             speed = read_int_from_file(filename)
+            if self.is_psu_fan and self.psu is not None and self.psu['is_fan_sw_controllable'] == True:
+                return speed
 
         pwm = self.rpm2pwm(speed)
             
@@ -163,20 +168,24 @@ class Fan(FanBase):
     def get_target_speed(self):
         if self.is_psu_fan:
             return None
+
         if self.get_presence() :
+            if self._target_speed is not None:
+                return self._target_speed
+
             for dirname in os.listdir(self.fan_path):
                 if fnmatch.fnmatch(dirname, 'hwmon?'):
                     filename = self.fan_path + dirname + '/' + self.pwm_path
                     break
             if filename is None:
-                return self.max_speed
+                return None
             if not os.path.exists(filename):
-                return self.max_speed
-            pwm = read_int_from_file(filename)
+                return None
+            pwm = read_int_from_file(filename, PWM_MAX)
             pwm = int(int(pwm) * 100 / PWM_MAX)
             return pwm
         else :
-            return 0
+            return None
 
 
     def set_speed(self, speed):
@@ -192,6 +201,7 @@ class Fan(FanBase):
                 return False
             if not os.path.exists(filename):
                 return False
+            self._target_speed = int(speed)
             pwm = int(PWM_MAX * int(speed) / 100)
             status = write_file(filename, pwm)
             return status
@@ -228,8 +238,11 @@ class Fan(FanBase):
 
     def set_status_led(self,color):
         if self.is_psu_fan:
-            #Silently fail
+            return True #silently fail
+
+        if not self.get_presence():
             return True
+
         if color == "red" :
            if  os.path.exists(self.r_led_path):
                write_file(self.r_led_path,255)
@@ -240,13 +253,31 @@ class Fan(FanBase):
                write_file(self.r_led_path,0)
            if  os.path.exists(self.g_led_path):
                write_file(self.g_led_path,255)
+        elif color == "amber":
+           if  os.path.exists(self.r_led_path):
+               write_file(self.r_led_path,255)
+           if  os.path.exists(self.g_led_path):
+               write_file(self.g_led_path,255)
+        elif color == "off":
+           if  os.path.exists(self.r_led_path):
+               write_file(self.r_led_path,0)
+           if  os.path.exists(self.g_led_path):
+               write_file(self.g_led_path,0)
+        else:
+            return False
 
         return True
 
     def get_status_led(self):
         if self.is_psu_fan:
-            #Silently fail
-            return 'green'
+            if self.get_presence():
+                return 'green'
+            else:
+                return 'off'
+
+        if not self.get_presence():
+            return 'off'
+
         red_color_val = 0
         green_color_val = 0
         if os.path.exists(self.g_led_path):

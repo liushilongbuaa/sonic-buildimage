@@ -8,6 +8,7 @@
 try:
     import os
     import fnmatch, subprocess, time
+    import re
     from sonic_platform_base.sonic_sfp.sfputilbase import SfpUtilBase
     from sonic_platform_base.sonic_sfp.sff8472 import sff8472InterfaceId
     from sonic_platform_base.sonic_sfp.sff8472 import sff8472Dom
@@ -379,7 +380,7 @@ class SfpUtil(SfpUtilBase):
 
         if port_num in self.osfp_ports:
             #TBD: for QSFP-DD ports
-            return rx_los_state 
+            return rx_los_state
 
         eeprom_path = self.open_port_to_eeprom_path(port_num)
         if eeprom_path is None:
@@ -401,14 +402,14 @@ class SfpUtil(SfpUtilBase):
         tx_fault_state = []
 
         if not self._is_valid_port(port_num):
-            return tx_fault_state 
+            return tx_fault_state
 
         if not self.get_presence(port_num):
             return tx_fault_state
 
         if port_num in self.osfp_ports:
             #TBD: for QSFP-DD ports
-            return tx_fault_state 
+            return tx_fault_state
 
         eeprom_path = self.open_port_to_eeprom_path(port_num)
         if eeprom_path is None:
@@ -434,7 +435,7 @@ class SfpUtil(SfpUtilBase):
             return tx_disable_state 
 
         if not self.get_presence(port_num):
-            return tx_disable_state
+            return tx_disable_state 
 
         if port_num in self.osfp_ports:
             #TBD: for QSFP-DD ports
@@ -541,7 +542,7 @@ class SfpUtil(SfpUtilBase):
         eeprom_path = self.open_port_to_eeprom_path(port_num)
         if eeprom_path is None:
             return status 
-            
+
         if self.is_qsfp(port_num,eeprom_path):
             byte93 = self._read_eeprom_specific_bytes(eeprom_path, QSFP_CONTROL_BYTES_OFFSET, QSFP_CONTROL_BYTES_WIDTH)[7]
             if byte93:
@@ -610,7 +611,7 @@ class SfpUtil(SfpUtilBase):
                     #Write into soft TX disable select bit @ SFP_STATUS_CONTROL_OFFSET
                     run_cmd = '/usr/sbin/i2cset -y -f ' + str(self.EEPROM_OFFSET + port_num) + ' 0x' + str(self.EEPROM_OFFSET) + ' ' + str(SFP_STATUS_CONTROL_OFFSET) + ' ' + str(hex(data)) 
                     os.system(run_cmd)
-                    status = True
+                status = True
         self.close_port_eeprom_path( eeprom_path)
         return status 
 
@@ -621,10 +622,6 @@ class SfpUtil(SfpUtilBase):
             return status
         
         if not self.get_presence(port_num):
-            return status
-
-        if port_num in self.sfp_ports:
-            #N/A for SFP+ ports
             return status
 
         if port_num in self.osfp_ports:
@@ -650,101 +647,172 @@ class SfpUtil(SfpUtilBase):
                 run_cmd = '/usr/sbin/i2cset -y -f ' + str(self.EEPROM_OFFSET + port_num) + ' 0x' + str(self.EEPROM_OFFSET) + ' ' + str(QSFP_CONTROL_BYTES_OFFSET) + ' ' + str(hex(data)) 
                 os.system(run_cmd)
                 status = True
+        else:
+            #For SFP+, its same as tx_disable()
+            raw_data = self._read_eeprom_specific_bytes(eeprom_path, SFP_STATUS_CONTROL_OFFSET, SFP_STATUS_CONTROL_WIDTH)
+            if raw_data:
+                data = int(raw_data[0], 16)
+                tx_disable_state = (sffbase().test_bit(data, 7) != 0)
+                if tx_disable_state != disable:
+                    if disable:
+                        data = self.set_bit(data, 6)
+                    else:
+                        data = self.clear_bit(data, 6)
+                    #Write into soft TX disable select bit @ SFP_STATUS_CONTROL_OFFSET
+                    run_cmd = '/usr/sbin/i2cset -y -f ' + str(self.EEPROM_OFFSET + port_num) + ' 0x' + str(self.EEPROM_OFFSET) + ' ' + str(SFP_STATUS_CONTROL_OFFSET) + ' ' + str(hex(data))
+                    os.system(run_cmd)
+                status = True
 
         self.close_port_eeprom_path( eeprom_path)
         return status
 
+    def _convert_string_to_float(self, value_string):
+        value_s = ''
+        value_f = 0.0
+
+        if "-inf" in value_string:
+            return 'N/A'
+        elif "Unknown" in value_string:
+            return 'N/A'
+        elif 'C' in value_string:
+            #sffbase.py returns temperature value in this format '%.4f' %result + 'C'
+            match_obj=re.match(r'^\s*\d*\.\d+\s*C\s*$',value_string,re.M)
+            if match_obj:
+                value_s=re.sub(r'C',"",value_string)
+                value_s.strip()
+                value_f = float(value_s)
+                return value_f
+            else:
+                return None
+        elif 'dBm' in value_string:
+            #sffbase.py returns power value in this format "%.4f%s" % (self.mw_to_dbm(mW), "dBm")
+            match_obj=re.match(r'^\s*\d*\.\d+\s*dBm\s*$',value_string,re.M)
+            if match_obj:
+                value_s=re.sub(r'dBm',"",value_string)
+                value_s.strip()
+                value_f = float(value_s)
+                return value_f
+            else:
+                return None
+        elif 'mA' in value_string:
+            #sffbase.py returns bias value in this format '%.4f' %result + 'mA'
+            match_obj=re.match(r'^\s*\d*\.\d+\s*mA\s*$',value_string,re.M)
+            if match_obj:
+                value_s=re.sub(r'mA',"",value_string)
+                value_s.strip()
+                value_f = float(value_s)
+                return value_f
+            else:
+                return None
+        elif 'Volts' in value_string:
+            #sffbase.py returns voltage value in this format '%.4f' %result + 'Volts'
+            match_obj=re.match(r'^\s*\d*\.\d+\s*Volts\s*$',value_string,re.M)
+            if match_obj:
+                value_s=re.sub(r'Volts',"",value_string)
+                value_s.strip()
+                value_f = float(value_s)
+                return value_f
+            else:
+                return None
+        else:
+            return 'N/A'
+
     def get_temperature(self, port_num):
         if self._is_valid_port(port_num) :
             if port_num in self.osfp_ports:
-                return 'N/A'          #Need to handle it in future
+                return None          #Need to handle it in future
             elif port_num in self.qsfp_ports:
                 offset  = 0 + QSFP_TEMPE_OFFSET
                 width = QSFP_TEMPE_WIDTH
                 sfpd_obj = sff8436Dom()
                 if sfpd_obj is None:
-                    return 'N/A'
+                    return None
             else:
                 offset = 256 + SFP_TEMPE_OFFSET
                 width = SFP_TEMPE_WIDTH
                 sfpd_obj = sff8472Dom()
                 if sfpd_obj is None:
-                    return 'N/A'
+                    return None
 
             eeprom_path = self.open_port_to_eeprom_path(port_num)
             if eeprom_path is None:
-                return 'N/A'
+                return None
            
             temperature_value = None
+            temperature_value_f = None
+
             raw_data = self._read_eeprom_specific_bytes(eeprom_path, offset, width)
             if raw_data is not None:
                 dom_temperature_data = sfpd_obj.parse_temperature(raw_data, 0)
                 temperature_value = dom_temperature_data['data']['Temperature']['value']
+                temperature_value_f = self._convert_string_to_float(temperature_value)
             self.close_port_eeprom_path( eeprom_path)
-        return temperature_value
+        return temperature_value_f
 
     def get_voltage(self, port_num):
         if self._is_valid_port(port_num) :
             if port_num in self.osfp_ports:
-                return 'N/A'          #Need to handle it in future
+                return None          #Need to handle it in future
             elif port_num in self.qsfp_ports:
                 offset  = 0 + QSFP_VOLT_OFFSET
                 width = QSFP_VOLT_WIDTH
                 sfpd_obj = sff8436Dom()
                 if sfpd_obj is None:
-                    return 'N/A'
+                    return None
             else:
                 offset = 256 + SFP_VOLT_OFFSET
                 width = SFP_VOLT_WIDTH
                 sfpd_obj = sff8472Dom()
                 if sfpd_obj is None:
-                    return 'N/A'
+                    return None
 
             eeprom_path = self.open_port_to_eeprom_path(port_num)
             if eeprom_path is None:
-                return 'N/A'
+                return None
            
             voltage_value = None
+            voltage_value_f = None
+
             raw_data = self._read_eeprom_specific_bytes(eeprom_path, offset, width)
             if raw_data is not None:
                 dom_voltage_data = sfpd_obj.parse_voltage(raw_data, 0)
                 voltage_value = dom_voltage_data['data']['Vcc']['value']
+                voltage_value_f = self._convert_string_to_float(voltage_value)
             self.close_port_eeprom_path( eeprom_path)
-        return voltage_value 
+        return voltage_value_f
 
     def get_tx_bias(self, port_num):
-        tx_bias_dict_keys = [ 'tx1bias', 'tx2bias', 'tx3bias', 'tx4bias',]
-        tx_bias_dict = dict.fromkeys(tx_bias_dict_keys, 'N/A')
+        tx_bias_list = [0.0, 0.0, 0.0, 0.0]
 
         transceiver_dom_info_dict = self.get_transceiver_dom_info_dict(port_num)
         if transceiver_dom_info_dict is not None :
-            tx_bias_dict['tx1bias']= transceiver_dom_info_dict['tx1bias']
-            tx_bias_dict['tx2bias']= transceiver_dom_info_dict['tx2bias']
-            tx_bias_dict['tx3bias']= transceiver_dom_info_dict['tx3bias']
-            tx_bias_dict['tx4bias']= transceiver_dom_info_dict['tx4bias']
-        return tx_bias_dict
+            tx_bias_list[0] = self._convert_string_to_float(transceiver_dom_info_dict['tx1bias'])
+            tx_bias_list[1] = self._convert_string_to_float(transceiver_dom_info_dict['tx2bias'])
+            tx_bias_list[2] = self._convert_string_to_float(transceiver_dom_info_dict['tx3bias'])
+            tx_bias_list[3] = self._convert_string_to_float(transceiver_dom_info_dict['tx4bias'])
+            return tx_bias_list
+        return None
 
     def get_rx_power(self, port_num):
-        rx_power_dict_keys = ['rx1power', 'rx2power',    'rx3power', 'rx4power',]
-        rx_power_dict = dict.fromkeys(rx_power_dict_keys, 'N/A')
+        rx_power_list = [0.0, 0.0, 0.0, 0.0]
 
         transceiver_dom_info_dict = self.get_transceiver_dom_info_dict(port_num)
         if transceiver_dom_info_dict is not None :
-            rx_power_dict['rx1power'] =transceiver_dom_info_dict['rx1power']
-            rx_power_dict['rx2power'] =transceiver_dom_info_dict['rx2power']
-            rx_power_dict['rx3power'] =transceiver_dom_info_dict['rx3power']
-            rx_power_dict['rx4power'] =transceiver_dom_info_dict['rx4power']
-        return rx_power_dict
+            rx_power_list[0] = self._convert_string_to_float(transceiver_dom_info_dict['rx1power'])
+            rx_power_list[1] = self._convert_string_to_float(transceiver_dom_info_dict['rx2power'])
+            rx_power_list[2] = self._convert_string_to_float(transceiver_dom_info_dict['rx3power'])
+            rx_power_list[3] = self._convert_string_to_float(transceiver_dom_info_dict['rx4power'])
+            return rx_power_list
+        return None
 
     def get_tx_power(self, port_num):
-        tx_power_dict_keys = ['tx1power', 'tx2power',    'tx3power', 'tx4power',]
-        tx_power_dict = dict.fromkeys(tx_power_dict_keys, 'N/A')
+        tx_power_list = [0.0, 0.0, 0.0, 0.0]
 
         transceiver_dom_info_dict = self.get_transceiver_dom_info_dict(port_num)
         if transceiver_dom_info_dict is not None :
-            tx_power_dict['tx1power'] =transceiver_dom_info_dict['tx1power']
-            tx_power_dict['tx2power'] =transceiver_dom_info_dict['tx2power']
-            tx_power_dict['tx3power'] =transceiver_dom_info_dict['tx3power']
-            tx_power_dict['tx4power'] =transceiver_dom_info_dict['tx4power']
-        return tx_power_dict
-
+            tx_power_list[0] = self._convert_string_to_float(transceiver_dom_info_dict['tx1power'])
+            tx_power_list[1] = self._convert_string_to_float(transceiver_dom_info_dict['tx2power'])
+            tx_power_list[2] = self._convert_string_to_float(transceiver_dom_info_dict['tx3power'])
+            tx_power_list[3] = self._convert_string_to_float(transceiver_dom_info_dict['tx4power'])
+            return tx_power_list
+        return None

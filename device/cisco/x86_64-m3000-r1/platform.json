@@ -1,0 +1,189 @@
+{
+	"chassis":{
+		"name": "x86_64-m3000-r1",
+        "components": [
+            {
+                "name" : "Primary BIOS"
+            }
+        ],
+        "fans": [],
+        "fan_drawers": [
+            {
+                "name": "Fantray-1",
+                "fans": [
+                    {
+                        "name": "FAN 1-1"
+                    },
+                    {
+                        "name": "FAN 1-2"
+                    }
+                ]
+            },
+            {
+                "name": "Fantray-2",
+                "fans": [
+                    {
+                        "name": "FAN 2-1"
+                    },
+                    {
+                        "name": "FAN 2-2"
+                    }
+                ]
+            },
+            {
+                "name": "Fantray-3",
+                "fans": [
+                    {
+                        "name": "FAN 3-1"
+                    },
+                    {
+                        "name": "FAN 3-2"
+                    }
+                ]
+            },
+            {
+                "name": "Fantray-4",
+                "fans": [
+                    {
+                        "name": "FAN 4-1"
+                    },
+                    {
+                        "name": "FAN 4-2"
+                    }
+                ]
+            }
+        ],
+        "psus": [
+            {
+                "name": "PSU 1",
+                "fans": [
+                    {
+                        "name": "PSU1-FAN1"
+                    }
+                ]
+            },
+            {
+                "name": "PSU 2",
+                "fans": [
+                    {
+                        "name": "PSU2-FAN1"
+                    }
+                ]
+            }
+        ],
+        "thermals": [
+            {
+                "name": "Back (D3)"
+            },
+            {
+                "name": "Front-Left (D2)"
+            },
+            {
+                "name": "Front-Middle (D1)"
+            },
+            {
+                "name": "Internal (D0)"
+            }
+        ],
+        "sfps": [
+            {
+                "name": "FrontPort-1"
+            },
+            {
+                "name": "FrontPort-2"
+            },
+            {
+                "name": "FrontPort-3"
+            },
+            {
+                "name": "FrontPort-4"
+            },
+            {
+                "name": "FrontPort-5"
+            },
+            {
+                "name": "FrontPort-6"
+            },
+            {
+                "name": "FrontPort-7"
+            },
+            {
+                "name": "FrontPort-8"
+            },
+            {
+                "name": "FrontPort-9"
+            },
+            {
+                "name": "FrontPort-10"
+            },
+            {
+                "name": "FrontPort-11"
+            },
+            {
+                "name": "FrontPort-12"
+            },
+            {
+                "name": "FrontPort-13"
+            },
+            {
+                "name": "FrontPort-14"
+            },
+            {
+                "name": "FrontPort-15"
+            },
+            {
+                "name": "FrontPort-16"
+            },
+            {
+                "name": "FrontPort-17"
+            },
+            {
+                "name": "FrontPort-18"
+            },
+            {
+                "name": "FrontPort-19"
+            },
+            {
+                "name": "FrontPort-20"
+            },
+            {
+                "name": "FrontPort-21"
+            },
+            {
+                "name": "FrontPort-22"
+            },
+            {
+                "name": "FrontPort-23"
+            },
+            {
+                "name": "FrontPort-24"
+            },
+            {
+                "name": "FrontPort-25"
+            },
+            {
+                "name": "FrontPort-26"
+            },
+            {
+                "name": "FrontPort-27"
+            },
+            {
+                "name": "FrontPort-28"
+            },
+            {
+                "name": "FrontPort-29"
+            },
+            {
+                "name": "FrontPort-30"
+            },
+            {
+                "name": "FrontPort-31"
+            },
+            {
+                "name": "FrontPort-32"
+            }
+        ]
+    },
+    "interfaces": {
+    }
+}

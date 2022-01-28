@@ -1,0 +1,12 @@
+{
+	"chassis":{
+		"x86_64-m3000-r0":{
+			"component":{
+				"Primary BIOS":{
+			        }
+			}
+
+        }
+    }
+
+}

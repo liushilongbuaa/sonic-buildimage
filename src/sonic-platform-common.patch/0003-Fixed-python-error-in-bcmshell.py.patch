@@ -1,0 +1,55 @@
+From a16cb39d69a423e2a9c01908499a4afe24e62834 Mon Sep 17 00:00:00 2001
+From: aaliv <aaliv@cisco.com>
+Date: Wed, 10 Nov 2021 06:36:24 -0800
+Subject: [PATCH] Fixed python error in bcmshell.py
+
+---
+ sonic_platform_base/sonic_sfp/bcmshell.py | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/sonic_platform_base/sonic_sfp/bcmshell.py b/sonic_platform_base/sonic_sfp/bcmshell.py
+index 244dfa6..56c85a5 100644
+--- a/sonic_platform_base/sonic_sfp/bcmshell.py
++++ b/sonic_platform_base/sonic_sfp/bcmshell.py
+@@ -404,7 +404,8 @@ class bcmshell (object):
+ 
+         self.__open__()
+         try:
+-            self.socketobj.sendall(cmd + '\n')
++            cmd = cmd + " \n"
++            self.socketobj.sendall(cmd.encode('utf-8'))
+         except socket.error as err:
+             (errno, errstr) = err.args
+             raise IOError("unable to send command \"%s\", %s" % (cmd, errstr))
+@@ -414,7 +415,7 @@ class bcmshell (object):
+         quitting_time = time.time() + self.timeout
+         while True:
+             try:
+-                self.buffer += self.socketobj.recv(4096)
++                self.buffer += self.socketobj.recv(4096).decode('utf-8')
+             except socket.timeout:
+                 raise RuntimeError("recv stalled for %d seconds" % self.timeout)
+             found = self.re_prompt.search(self.buffer)
+@@ -475,16 +476,16 @@ class bcmshell (object):
+ 
+             # flush out the socket in case it was left dirty
+             try:
+-                self.socketobj.sendall('echo bcmshell\n')
++                cmd="echo bcmshell \n"
++                self.socketobj.sendall(cmd.encode('utf-8'))
+                 quitting_time = time.time() + self.timeout
+                 buf = ''
+                 while True:
+                     try:
+-                        buf += self.socketobj.recv(1024)
++                        buf += self.socketobj.recv(1024).decode('utf-8')
+                     except socket.timeout:
+                         raise IOError("unable to receive data from %s for %d seconds" %
+                                       (self.socketname, self.timeout))
+-
+                     found = self.re_connectprompt.search(buf)
+                     if found:
+                         break
+-- 
+2.7.4
+

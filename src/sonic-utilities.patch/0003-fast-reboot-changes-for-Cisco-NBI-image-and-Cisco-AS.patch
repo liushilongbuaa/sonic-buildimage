@@ -22,7 +22,7 @@ Index: sonic-utilities/scripts/fast-reboot
  ASSISTANT_IP_LIST=""
  ASSISTANT_SCRIPT="/usr/local/bin/neighbor_advertiser"
  WATCHDOG_UTIL="/usr/local/bin/watchdogutil"
-@@ -52,7 +53,9 @@ function debug()
+@@ -51,7 +52,9 @@ function debug()
      if [[ x"${VERBOSE}" == x"yes" ]]; then
          echo $(date) $@
      fi
@@ -33,7 +33,7 @@ Index: sonic-utilities/scripts/fast-reboot
  }
  
  function showHelpAndExit()
-@@ -64,7 +67,7 @@ function showHelpAndExit()
+@@ -63,7 +66,7 @@ function showHelpAndExit()
      echo "    -i    : force execution - ignore ASIC MD5-checksum-verification"
      echo "    -d    : force execution - ignore database integrity check"
      echo "    -r    : reboot with /sbin/reboot"
@@ -42,7 +42,7 @@ Index: sonic-utilities/scripts/fast-reboot
      echo "    -x    : execute script with -x flag"
      echo "    -c    : specify control plane assistant IP list"
      echo "    -s    : strict mode: do not proceed without:"
-@@ -97,7 +100,7 @@ function parseOptions()
+@@ -96,7 +99,7 @@ function parseOptions()
                  REBOOT_METHOD="/sbin/reboot"
                  ;;
              k )
@@ -51,7 +51,7 @@ Index: sonic-utilities/scripts/fast-reboot
                  ;;
              x )
                  set -x
-@@ -119,7 +122,7 @@ function common_clear()
+@@ -118,7 +121,7 @@ function common_clear()
  {
      debug "${REBOOT_TYPE} failure ($?) cleanup ..."
  
@@ -60,7 +60,7 @@ Index: sonic-utilities/scripts/fast-reboot
  
      teardown_control_plane_assistant
  }
-@@ -312,23 +315,55 @@ function setup_reboot_variables()
+@@ -309,23 +312,57 @@ function setup_reboot_variables()
      HWSKU=$(show platform summary --json | python -c 'import sys, json; print(json.load(sys.stdin)["hwsku"])')
      NEXT_SONIC_IMAGE=$(sonic-installer list | grep "Next: " | cut -d ' ' -f 2)
      IMAGE_PATH="/host/image-${NEXT_SONIC_IMAGE#SONiC-OS-}"
@@ -88,21 +88,23 @@ Index: sonic-utilities/scripts/fast-reboot
 +        if [ $? -ne 0 ] ; then
 +           echo "failed to get kernel and initrd from nbi runtime image"
 +           exit
++        fi
++        KERNEL_IMAGE="/tmp/nbi-ks-expand/vmlinuz"
++        acpi_rsdp=""
++        if [[ "$PLATFORM" != 'x86_64-m3000-r1' && "$PLATFORM" != 'x86_64-m3000-r0' ]]; then
++          for dir in /sys/firmware/memmap/* ; do
++            mem_type="$(cat $dir/type)"
++            if [ "$mem_type" = "ACPI Tables" ] ; then
++              rsdp_start="$(cat $dir/start)"
++              acpi_rsdp="acpi_rsdp=$rsdp_start"
++              break
++            fi
++          done
          fi
 -    elif grep -q onie_platform= /host/machine.conf; then
 -        KERNEL_OPTIONS=$(cat /host/grub/grub.cfg | sed "/$NEXT_SONIC_IMAGE'/,/}/"'!'"g" | grep linux)
 -        KERNEL_IMAGE="/host$(echo $KERNEL_OPTIONS | cut -d ' ' -f 2)"
 -        BOOT_OPTIONS="$(echo $KERNEL_OPTIONS | sed -e 's/\s*linux\s*/BOOT_IMAGE=/') SONIC_BOOT_TYPE=${BOOT_TYPE_ARG}"
-+        KERNEL_IMAGE="/tmp/nbi-ks-expand/vmlinuz"
-+        acpi_rsdp=""
-+        for dir in /sys/firmware/memmap/* ; do
-+          mem_type="$(cat $dir/type)"
-+          if [ "$mem_type" = "ACPI Tables" ] ; then
-+              rsdp_start="$(cat $dir/start)"
-+              acpi_rsdp="acpi_rsdp=$rsdp_start"
-+              break
-+          fi
-+        done
 +        BOOT_OPTIONS="$CONSOLE_SPEED $CRDIDX $MPAIDX $KSIMG $(tr -d '\0' < /tmp/nbi-ks-expand/cmdline) SONIC_BOOT_TYPE=${BOOT_TYPE_ARG} noefi $acpi_rsdp"
 +        INITRD="/tmp/nbi-ks-expand/initrd.img"
      else
@@ -130,7 +132,7 @@ Index: sonic-utilities/scripts/fast-reboot
  }
  
  function check_docker_exec()
-@@ -414,14 +449,14 @@ function load_aboot_secureboot_kernel()
+@@ -411,14 +448,14 @@ function load_aboot_secureboot_kernel()
  
  function load_kernel() {
      # Load kernel into the memory
@@ -147,7 +149,7 @@ Index: sonic-utilities/scripts/fast-reboot
      fi
  }
  
-@@ -484,6 +519,12 @@ function handle_slb_neighbors()
+@@ -455,6 +492,12 @@ function check_warm_restart_in_progress(
  }
  
  # main starts here
@@ -160,7 +162,7 @@ Index: sonic-utilities/scripts/fast-reboot
  parseOptions $@
  
  # Check root privileges
-@@ -499,11 +540,13 @@ sonic_asic_type=$(sonic-cfggen -y /etc/s
+@@ -470,11 +513,13 @@ sonic_asic_type=$(sonic-cfggen -y /etc/s
  BOOT_TYPE_ARG="cold"
  case "$REBOOT_TYPE" in
      "fast-reboot")
@@ -174,7 +176,7 @@ Index: sonic-utilities/scripts/fast-reboot
          check_warm_restart_in_progress
          if [[ "$sonic_asic_type" == "mellanox" ]]; then
              REBOOT_TYPE="fastfast-reboot"
-@@ -574,6 +617,11 @@ else
+@@ -561,6 +606,11 @@ else
      load_kernel
  fi
  

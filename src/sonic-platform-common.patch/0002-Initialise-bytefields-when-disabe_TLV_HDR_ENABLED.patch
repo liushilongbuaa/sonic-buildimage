@@ -1,0 +1,25 @@
+From 4ecfd20c21f6cfee3a398e888dc4fd961ced230f Mon Sep 17 00:00:00 2001
+From: aaliv <aaliv@cisco.com>
+Date: Mon, 9 Aug 2021 22:40:22 -0700
+Subject: [PATCH] Initialise bytefields when _TLV_HDR_ENABLED=0
+
+---
+ sonic_platform_base/sonic_eeprom/eeprom_tlvinfo.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sonic_platform_base/sonic_eeprom/eeprom_tlvinfo.py b/sonic_platform_base/sonic_eeprom/eeprom_tlvinfo.py
+index 2a6e18d..27798aa 100644
+--- a/sonic_platform_base/sonic_eeprom/eeprom_tlvinfo.py
++++ b/sonic_platform_base/sonic_eeprom/eeprom_tlvinfo.py
+@@ -291,7 +291,7 @@ class TlvInfoDecoder(eeprom_base.EepromDecoder):
+                 return h
+             sizeof_tlvs = (h[9] << 8) | h[10]
+         else:
+-            h = ""
++            h = bytearray()
+             sizeof_tlvs   = self._TLV_INFO_MAX_LEN
+ 
+         t = self.read_eeprom_bytes(sizeof_tlvs, offset)
+-- 
+2.7.4
+

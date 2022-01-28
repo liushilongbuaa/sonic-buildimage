@@ -1,0 +1,309 @@
+{
+	"chassis":{
+		"name": "x86_64-n3164-r0",
+        "status_led": {
+            "controllable": true,
+            "colors": ["red", "green", "amber", "off"]
+        },
+        "components": [
+            {
+                "name" : "IOFPGA"
+            },
+            {
+                "name" : "MIFPGA-1"
+            },
+            {
+                "name" : "MIFPGA-2"
+            },
+            {
+                "name" : "Primary BIOS"
+            },
+            {
+                "name" : "Golden BIOS"
+            }
+        ],
+        "fans": [
+            {
+                    "name": "FAN 1-1"
+            },
+            {
+                    "name": "FAN 1-2"
+            },
+            {
+                    "name": "FAN 2-1"
+            },
+            {
+                    "name": "FAN 2-2"
+            }
+        ],
+        "fan_drawers": [
+            {
+                "name": "Fantray-1",
+                "fans": [
+                    {
+                        "name": "FAN 1-1"
+                    },
+                    {
+                        "name": "FAN 1-2"
+                    }
+                ]
+            },
+            {
+                "name": "Fantray-2",
+                "fans": [
+                    {
+                        "name": "FAN 2-1"
+                    },
+                    {
+                        "name": "FAN 2-2"
+                    }
+                ]
+            }
+        ],
+        "psus": [
+            {
+                "name": "PSU1",
+                "status_led": {
+                    "controllable": false
+                },
+                "fans": [
+                    {
+                        "name": "PSU1-FAN1",
+                        "speed": {
+                            "controllable": false
+                        },
+                        "status_led": {
+                            "controllable": false
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "PSU2",
+                "status_led": {
+                    "controllable": false
+                },
+                "fans": [
+                    {
+                        "name": "PSU2-FAN1",
+                        "speed": {
+                            "controllable": false
+                        },
+                        "status_led": {
+                            "controllable": false
+                        }
+                    }
+                ]
+            }
+        ],
+        "thermals": [
+            {
+                "name": "REAR (UPPER BOARD)"
+            },
+            {
+                "name": "FRONT (UPPER BOARD)"
+            },
+            {
+                "name": "REAR (LOWER BOARD)"
+            },
+            {
+                "name": "FRONT (LOWER BOARD)"
+            }
+        ],
+        "sfps": [
+            {
+                "name": "FrontPort-1"
+            },
+            {
+                "name": "FrontPort-2"
+            },
+            {
+                "name": "FrontPort-3"
+            },
+            {
+                "name": "FrontPort-4"
+            },
+            {
+                "name": "FrontPort-5"
+            },
+            {
+                "name": "FrontPort-6"
+            },
+            {
+                "name": "FrontPort-7"
+            },
+            {
+                "name": "FrontPort-8"
+            },
+            {
+                "name": "FrontPort-9"
+            },
+            {
+                "name": "FrontPort-10"
+            },
+            {
+                "name": "FrontPort-11"
+            },
+            {
+                "name": "FrontPort-12"
+            },
+            {
+                "name": "FrontPort-13"
+            },
+            {
+                "name": "FrontPort-14"
+            },
+            {
+                "name": "FrontPort-15"
+            },
+            {
+                "name": "FrontPort-16"
+            },
+            {
+                "name": "FrontPort-17"
+            },
+            {
+                "name": "FrontPort-18"
+            },
+            {
+                "name": "FrontPort-19"
+            },
+            {
+                "name": "FrontPort-20"
+            },
+            {
+                "name": "FrontPort-21"
+            },
+            {
+                "name": "FrontPort-22"
+            },
+            {
+                "name": "FrontPort-23"
+            },
+            {
+                "name": "FrontPort-24"
+            },
+            {
+                "name": "FrontPort-25"
+            },
+            {
+                "name": "FrontPort-26"
+            },
+            {
+                "name": "FrontPort-27"
+            },
+            {
+                "name": "FrontPort-28"
+            },
+            {
+                "name": "FrontPort-29"
+            },
+            {
+                "name": "FrontPort-30"
+            },
+            {
+                "name": "FrontPort-31"
+            },
+            {
+                "name": "FrontPort-32"
+            },
+            {
+                "name": "FrontPort-33"
+            },
+            {
+                "name": "FrontPort-34"
+            },
+            {
+                "name": "FrontPort-35"
+            },
+            {
+                "name": "FrontPort-36"
+            },
+            {
+                "name": "FrontPort-37"
+            },
+            {
+                "name": "FrontPort-38"
+            },
+            {
+                "name": "FrontPort-39"
+            },
+            {
+                "name": "FrontPort-40"
+            },
+            {
+                "name": "FrontPort-41"
+            },
+            {
+                "name": "FrontPort-42"
+            },
+            {
+                "name": "FrontPort-43"
+            },
+            {
+                "name": "FrontPort-44"
+            },
+            {
+                "name": "FrontPort-45"
+            },
+            {
+                "name": "FrontPort-46"
+            },
+            {
+                "name": "FrontPort-47"
+            },
+            {
+                "name": "FrontPort-48"
+            },
+            {
+                "name": "FrontPort-49"
+            },
+            {
+                "name": "FrontPort-50"
+            },
+            {
+                "name": "FrontPort-51"
+            },
+            {
+                "name": "FrontPort-52"
+            },
+            {
+                "name": "FrontPort-53"
+            },
+            {
+                "name": "FrontPort-54"
+            },
+            {
+                "name": "FrontPort-55"
+            },
+            {
+                "name": "FrontPort-56"
+            },
+            {
+                "name": "FrontPort-57"
+            },
+            {
+                "name": "FrontPort-58"
+            },
+            {
+                "name": "FrontPort-59"
+            },
+            {
+                "name": "FrontPort-60"
+            },
+            {
+                "name": "FrontPort-61"
+            },
+            {
+                "name": "FrontPort-62"
+            },
+            {
+                "name": "FrontPort-63"
+            },
+            {
+                "name": "FrontPort-64"
+            }
+        ]
+    },
+    "interfaces": {}
+}

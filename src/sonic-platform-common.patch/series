@@ -1,1 +1,3 @@
-0002-Credo-changes-for-firmware-update-for-Y-cable.patch
+0001-Credo-changes-for-firmware-update-for-Y-cable.patch
+0002-Initialise-bytefields-when-disabe_TLV_HDR_ENABLED.patch
+0003-Fixed-python-error-in-bcmshell.py.patch

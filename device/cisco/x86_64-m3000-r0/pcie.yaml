@@ -1,0 +1,99 @@
+- bus: '00'
+  dev: '00'
+  fn: '0'
+  id: '0104'
+  name: 'Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM
+    Controller (rev 09)'
+- bus: '00'
+  dev: '01'
+  fn: '0'
+  id: '0101'
+  name: 'PCI bridge: Intel Corporation Xeon E3-1200/2nd Generation Core Processor
+    Family PCI Express Root Port (rev 09)'
+- bus: '00'
+  dev: '06'
+  fn: '0'
+  id: 010d
+  name: 'PCI bridge: Intel Corporation Xeon E3-1200/2nd Generation Core Processor
+    Family PCI Express Root Port (rev 09)'
+- bus: '00'
+  dev: 1c
+  fn: '0'
+  id: '2342'
+  name: 'PCI bridge: Intel Corporation DH89xxCC PCI Express Root Port #1 (rev 08)'
+- bus: '00'
+  dev: 1d
+  fn: '0'
+  id: '2334'
+  name: 'USB controller: Intel Corporation DH89xxCC USB2 Enhanced Host Controller
+    #1 (rev 08)'
+- bus: '00'
+  dev: 1f
+  fn: '0'
+  id: '2310'
+  name: 'ISA bridge: Intel Corporation DH89xxCC LPC Controller (rev 08)'
+- bus: '00'
+  dev: 1f
+  fn: '2'
+  id: '2323'
+  name: 'SATA controller: Intel Corporation DH89xxCC 4 Port SATA AHCI Controller (rev
+    08)'
+- bus: '00'
+  dev: 1f
+  fn: '3'
+  id: '2330'
+  name: 'SMBus: Intel Corporation DH89xxCC SMBus Controller (rev 08)'
+- bus: '00'
+  dev: 1f
+  fn: '4'
+  id: '2331'
+  name: 'Performance counters: Intel Corporation DH89xxCC Chap Counter (rev 08)'
+- bus: '00'
+  dev: 1f
+  fn: '7'
+  id: '2360'
+  name: 'System peripheral: Intel Corporation DH89xxCC Watchdog Timer (rev 08)'
+- bus: '01'
+  dev: '00'
+  fn: '0'
+  id: '0434'
+  name: 'Co-processor: Intel Corporation DH89XXCC Series QAT (rev 21)'
+- bus: '01'
+  dev: '00'
+  fn: '1'
+  id: 0438
+  name: 'Ethernet controller: Intel Corporation DH8900CC Series Gigabit Network Connection
+    (rev 21)'
+- bus: '01'
+  dev: '00'
+  fn: '2'
+  id: 0438
+  name: 'Ethernet controller: Intel Corporation DH8900CC Series Gigabit Network Connection
+    (rev 21)'
+- bus: '01'
+  dev: '00'
+  fn: '3'
+  id: '0436'
+  name: 'Ethernet controller: Intel Corporation DH8900CC Null Device (rev 21)'
+- bus: '01'
+  dev: '00'
+  fn: '4'
+  id: '0436'
+  name: 'Ethernet controller: Intel Corporation DH8900CC Null Device (rev 21)'
+- bus: '02'
+  dev: '00'
+  fn: '0'
+  id: b850
+  name: 'Ethernet controller: Broadcom Limited Broadcom BCM56850 Switch ASIC (rev
+    02)'
+- bus: '03'
+  dev: '00'
+  fn: '0'
+  id: '8112'
+  name: 'PCI bridge: PLX Technology, Inc. PEX8112 x1 Lane PCI Express-to-PCI Bridge
+    (rev aa)'
+- bus: '04'
+  dev: '00'
+  fn: '0'
+  id: '9030'
+  name: 'Bridge: PLX Technology, Inc. PCI9030 32-bit 33MHz PCI <-> IOBus Bridge'

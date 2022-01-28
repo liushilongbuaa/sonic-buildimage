@@ -13,13 +13,15 @@ try:
     import sys
     import redis
     from sonic_platform.eeprom_tlv import Eeprom_Tlv
+    from sonic_platform.globals import PlatformGlobalData
 except ImportError as e:
     raise ImportError (str(e) + "- required module not found")
 
 logger = Logger()
 
 class Eeprom(Eeprom_Tlv):
-    def __init__(self):
+    def __init__(self,platform_data):
+        self.platform_data = platform_data
         self.name_map = {
             "Product Name":"PID",
             "Serial Number":"S/N",
@@ -75,12 +77,44 @@ class Eeprom(Eeprom_Tlv):
 
         return pfm_dict
 
-    def read_eeprom_map(self):
-        pfm_util_map = self.read_pfm_util('-d')
-        pfm_util_map.update(self.read_pfm_util('-r'))
+    def read_n31xx_eeprom(self):
+        pfm_dict = {}
+        if os.path.exists(self.platform_eeprom_path):
+            with open(self.platform_eeprom_path,"r") as eeprom_fp:
+                lines=eeprom_fp.readlines()
+        else:
+            try:
+                ph = subprocess.Popen(['/usr/share/sonic/platform/n31xx-sprom.sh'],
+                                 stdout=subprocess.PIPE,
+                                 shell=True, stderr=subprocess.PIPE)
+                stdout,stderr = ph.communicate()
+                ph.wait()
+            except OSError as e:
+                raise OSError("cannot access 31XX EEPROM")
 
-        eeprom_map = {key: pfm_util_map[self.name_map[key]] for key in self.name_map.keys()}
-        eeprom_code_map = {key: pfm_util_map[self.code_map[key]] for key in self.code_map.keys()}
+            str_img = stdout.decode("utf-8", errors="ignore")
+            lines = str_img.splitlines()
+        if not lines:
+            return pfm_dict
+        for line in lines:
+            line = line.rstrip('\n\r')
+            name = line.split(': ')[0].rstrip(' ')
+            value = line.split(': ')[1]
+            pfm_dict[name] = value
+        return pfm_dict
+
+    def read_eeprom_map(self):
+        eeprom_map ={}
+        eeprom_code_map={}
+
+        if (self.platform_data.get_param(PlatformGlobalData.KEY_N9K,1) == 1):
+            pfm_util_map = self.read_pfm_util('-d')
+            pfm_util_map.update(self.read_pfm_util('-r'))
+        else:
+            pfm_util_map = self.read_n31xx_eeprom()
+        if pfm_util_map:
+            eeprom_map = {key: pfm_util_map[self.name_map[key]] for key in self.name_map.keys()}
+            eeprom_code_map = {key: pfm_util_map[self.code_map[key]] for key in self.code_map.keys()}
 
         return eeprom_map, eeprom_code_map
 
@@ -99,6 +133,11 @@ class Eeprom(Eeprom_Tlv):
         """
         if self._eeprom_map is None:
             self._eeprom_map, self._eeprom_code_map = self.read_eeprom_map()
+            if self._eeprom_map:
+                return self._eeprom_map["Base MAC Address"]
+            else :
+                return ""
+
         return self._eeprom_map["Base MAC Address"]
 
     def get_serial_number(self):
@@ -110,6 +149,11 @@ class Eeprom(Eeprom_Tlv):
         """
         if self._eeprom_map is None:
             self._eeprom_map, self._eeprom_code_map = self.read_eeprom_map()
+            if self._eeprom_map:
+                return self._eeprom_map["Serial Number"]
+            else : 
+                return ""
+
         return self._eeprom_map["Serial Number"]
 
     def get_product_name(self):
@@ -121,6 +165,11 @@ class Eeprom(Eeprom_Tlv):
         """
         if self._eeprom_map is None:
             self._eeprom_map, self._eeprom_code_map = self.read_eeprom_map()
+            if self._eeprom_map:
+                return self._eeprom_map["Product Name"]
+            else :
+                return ""
+
         return self._eeprom_map["Product Name"]
 
     def get_part_number(self):
@@ -132,6 +181,11 @@ class Eeprom(Eeprom_Tlv):
         """
         if self._eeprom_map is None:
             self._eeprom_map, self._eeprom_code_map = self.read_eeprom_map()
+            if self._eeprom_map:
+                return self._eeprom_map["Part Number"]
+            else :
+                return ""
+
         return self._eeprom_map["Part Number"]
 
     def update_eeprom_db(self, eeprom):

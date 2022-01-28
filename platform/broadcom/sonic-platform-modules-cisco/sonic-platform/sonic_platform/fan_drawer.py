@@ -33,8 +33,15 @@ class FanDrawer(FanDrawerBase):
         return 'Fantray-' + str(self._index)
 
     def set_status_led(self, color):
+        status = 0
+        result = False
+
         for fan in self._fan_list:
-            fan.set_status_led(color)
+            result = fan.set_status_led(color)
+            if result is False:
+                status += 1
+
+        return True if status == 0 else False
 
     def get_status_led(self):
         if len(self._fan_list) != 0:

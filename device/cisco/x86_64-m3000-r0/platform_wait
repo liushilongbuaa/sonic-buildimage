@@ -1,0 +1,60 @@
+#!/bin/bash
+
+declare -r SYSLOG_LOGGER="/usr/bin/logger"
+declare -r SYSLOG_IDENTIFIER="platform_wait"
+declare -r SYSLOG_ERROR="error"
+declare -r SYSLOG_NOTICE="notice"
+declare -r SYSLOG_INFO="info"
+
+declare -r EXIT_SUCCESS="0"
+declare -r EXIT_TIMEOUT="1"
+
+function log_error() {
+    eval "${SYSLOG_LOGGER} -t ${SYSLOG_IDENTIFIER} -p ${SYSLOG_ERROR} $@"
+}
+
+function log_notice() {
+    eval "${SYSLOG_LOGGER} -t ${SYSLOG_IDENTIFIER} -p ${SYSLOG_NOTICE} $@"
+}
+
+function log_info() {
+    eval "${SYSLOG_LOGGER} -t ${SYSLOG_IDENTIFIER} -p ${SYSLOG_INFO} $@"
+}
+
+SYNCD_SOCKET_FILE=/run/docker-syncd/sswsyncd.socket
+
+# Function: wait until syncd has created the socket for bcmcmd to connect to
+wait_syncd() {
+
+    local -i WAIT_COUNT="1"
+    local -ir WAIT_MAX="300"
+    local -r TIMEOUT="1s"
+
+    while [[ "${WAIT_COUNT}" -le "${WAIT_MAX}" ]]; do
+        if [ -e ${SYNCD_SOCKET_FILE} ]; then
+
+            # wait until bcm sdk is ready to get a request
+            sleep 3
+            return "${EXIT_SUCCESS}"
+
+        fi
+
+        let "WAIT_COUNT++"
+        log_info "Waiting for bcmshell to be ready..[$WAIT_COUNT]"
+        sleep "${TIMEOUT}"
+    done
+    
+    return "${EXIT_TIMEOUT}"
+}
+
+log_info "Wait for bcmshell to be ready"
+wait_syncd
+EXIT_CODE="$?"
+if [[ "${EXIT_CODE}" != "${EXIT_SUCCESS}" ]]; then
+    log_error "bcmshell is not ready: timeout"
+    exit "${EXIT_CODE}"
+fi
+
+log_info "bcmshell is ready"
+
+exit "${EXIT_SUCCESS}"

@@ -11,8 +11,9 @@
 
 try:
     import binascii
+    import sys
     from sonic_eeprom import eeprom_tlvinfo
-except ImportError, e:
+except ImportError as e:
     raise ImportError (str(e) + "- required module not found")
 
 SUP_PID_OFFSET     = 34
@@ -37,21 +38,24 @@ class board(eeprom_tlvinfo.TlvInfoDecoder):
         super(board, self).__init__(self.eeprom_path, 0, '', True)
 
     def decode_eeprom(self, e):
-        print "TLV Name             Len Value"
-        print "-------------------- --- -----"
-        print self.dump_info(e, SUP_PID_OFFSET, PRODUCT_NUMBER_SIZE, "Sup-PID:")
-        print self.dump_info(e, SUP_SN_OFFSET, SERIAL_NUMBER_SIZE, "Sup-S/N:")
-        print self.dump_info(e, CARD_INDEX_OFFSET, CARD_INDEX_SIZE, "Card Index:")
-        print self.dump_info(e, PID_OFFSET, PRODUCT_NUMBER_SIZE, "PID:")
-        print self.dump_info(e, SN_OFFSET, SERIAL_NUMBER_SIZE, "S/N:")
-        print self.dump_mac(e)
+        print ("TLV Name             Len Value")
+        print ("-------------------- --- -----")
+        print (self.dump_info(e, SUP_PID_OFFSET, PRODUCT_NUMBER_SIZE, "Sup-PID:"))
+        print (self.dump_info(e, SUP_SN_OFFSET, SERIAL_NUMBER_SIZE, "Sup-S/N:"))
+        print (self.dump_card_info(e, CARD_INDEX_OFFSET, CARD_INDEX_SIZE, "Card Index:"))
+        print (self.dump_info(e, PID_OFFSET, PRODUCT_NUMBER_SIZE, "PID:"))
+        print (self.dump_info(e, SN_OFFSET, SERIAL_NUMBER_SIZE, "S/N:"))
+        print (self.dump_mac(e))
 
     def dump_info(self, e, offset, size, name):
-        return "%-20s %3d %s" % (name, size, e[offset:offset+size])
+        return "%-20s %3d %s" % (name, size, e[offset:offset+size].decode("utf-8"))
+
+    def dump_card_info(self, e, offset, size, name):
+        return "%-20s %3d %s" % (name, size, int.from_bytes(e[offset:offset+size],"big"))
 
     def dump_mac(self, e):
         mac_base = e[MAC_BASE_OFFSET:MAC_BASE_OFFSET+MAC_ADDR_SIZE]
-        mac = ":".join([binascii.b2a_hex(T) for T in mac_base]).upper()
+        mac = ":".join([hex(T).replace('0x','') for T in mac_base]).upper()
         return "%-20s %3d %s" % ("MAC Base:", 6, mac)
 
     def is_checksum_valid(self, e):
@@ -59,7 +63,7 @@ class board(eeprom_tlvinfo.TlvInfoDecoder):
 
     def base_mac_addr(self, e):
         mac_base = e[MAC_BASE_OFFSET:MAC_BASE_OFFSET+MAC_ADDR_SIZE]
-        return ":".join([binascii.b2a_hex(T) for T in mac_base]).upper()
+        return ":".join([hex(T).replace('0x','') for T in mac_base]).upper()
 
     def serial_number_str(self, e):
-        return e[SN_OFFSET:SN_OFFSET+SERIAL_NUMBER_SIZE]
+        return e[SN_OFFSET:SN_OFFSET+SERIAL_NUMBER_SIZE].decode("utf-8")
