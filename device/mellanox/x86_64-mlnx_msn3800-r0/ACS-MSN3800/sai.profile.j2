@@ -1,0 +1,10 @@
+{#- Default SAI configuration -#}
+{%- set sai_xml = 'SAI_INIT_CONFIG_FILE=/usr/share/sonic/hwsku/sai_3800.xml\nSAI_DUMP_STORE_PATH=/var/log/mellanox/sdk-dumps\nSAI_DUMP_STORE_AMOUNT=10' -%}
+
+{#- Static PBH SAI configuration -#}
+{%- if RESOURCE_TYPE is defined and (RESOURCE_TYPE == 'FPGASTP') -%}
+{%- set sai_xml = 'SAI_INIT_CONFIG_FILE=/usr/share/sonic/hwsku/sai_3800_pbh.xml\nSAI_DUMP_STORE_PATH=/var/log/mellanox/sdk-dumps\nSAI_DUMP_STORE_AMOUNT=10' -%}
+{%- endif -%}
+
+{#- Write contents of sai.profile -#}
+{{ sai_xml }}
