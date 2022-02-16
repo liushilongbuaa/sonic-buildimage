@@ -97,44 +97,19 @@ stages:
             done
           displayName: "Copy installers"
         - script: |
-            mkdir -p azcopy
-            pushd azcopy
-            wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1
-            popd
             export AZCOPY_LOG_LOCATION=$(pwd)/azcopy
             PUBLISH_PLATFORM_URL="https://$(SONIC_STORAGE_ACCOUNT).blob.core.windows.net/images/$(PUBLISH_BLOB_PREFIX)/$(GROUP_NAME)"
             PUBLISH_URL="$PUBLISH_PLATFORM_URL/$(Build.BuildId)$StorageSASKey"
-            azcopy/azcopy copy target "$PUBLISH_PLATFORM_URL/$(Build.BuildId)$StorageSASKey" --recursive=true --put-md5
+            azcopy copy target "$PUBLISH_PLATFORM_URL/$(Build.BuildId)$StorageSASKey" --recursive=true --put-md5
             touch prev_build
-            azcopy/azcopy copy "$PUBLISH_PLATFORM_URL/latest_build$StorageSASKey" latest_build || true
+            azcopy copy "$PUBLISH_PLATFORM_URL/latest_build$StorageSASKey" latest_build || true
             [ -f latest_build ] && mv latest_build prev_build
             echo $(Build.BuildId) > latest_build
-            azcopy/azcopy copy latest_build "$PUBLISH_PLATFORM_URL/latest_build$StorageSASKey"  --put-md5
-            azcopy/azcopy copy prev_build "$PUBLISH_PLATFORM_URL/prev_build$StorageSASKey"  --put-md5
+            azcopy copy latest_build "$PUBLISH_PLATFORM_URL/latest_build$StorageSASKey"  --put-md5
+            azcopy copy prev_build "$PUBLISH_PLATFORM_URL/prev_build$StorageSASKey"  --put-md5
           env:
             StorageSASKey: $(SONIC_STORAGE_SASKEY)
-          condition: not(startsWith(variables['PLATFORM_ARCH'], 'armhf'))
           displayName: "Publish to Azure Storage by azcopy"
-        - script: |
-            # currently the azcopy is not supported in arm, see https://github.com/Azure/azure-storage-azcopy/issues/882
-            [ ! -e /agent/blobfuse ] && mkdir -p /agent/blobfuse /agent/blobfuse-cache
-            sudo umount /agent/blobfuse > /dev/null 2>&1
-            if ! mountpoint -q  /agent/blobfuse; then
-              blobfuse /agent/blobfuse --tmp-path=/agent/blobfuse-cache --container-name=images
-            fi
-            PUBLISH_PATH=/agent/blobfuse/$(PUBLISH_BLOB_PREFIX)/$(GROUP_NAME)
-            mkdir -p $PUBLISH_PATH/$(Build.BuildId)
-            cp -rf target $PUBLISH_PATH/$(Build.BuildId)/
-            touch prev_build
-            [ -f $PUBLISH_PATH/latest_build ] && cp $PUBLISH_PATH/latest_build prev_build
-            echo $(Build.BuildId) > latest_build
-            cp latest_build $PUBLISH_PATH/
-            cp prev_build $PUBLISH_PATH/
-          condition: startsWith(variables['PLATFORM_ARCH'], 'armhf')
-          env:
-            AZURE_STORAGE_ACCOUNT: $(SONIC_STORAGE_ACCOUNT)
-            AZURE_STORAGE_SAS_TOKEN: $(SONIC_STORAGE_SASKEY)
-          displayName: "Publish to Azure Storage by blobfuse"
         - task: SSH@0
           displayName: "Make soft links for trusty8"
           inputs:
@@ -276,11 +251,8 @@ stages:
             make $OPTIONS ENABLE_RESTAPI=y target/docker-syncd-bfn-rpc.gz
             make $OPTIONS target/sonic-aboot-barefoot.swi
         - name: marvell-armhf
-          pool:
-            name: 'CDPCustom- sonic-build-agents'
-            demands:
-            - Docker.Arch -equals armhf
-          timeoutInMinutes: 4320
+          pool: sonic-armhf
+          timeoutInMinutes: 2160
           variables:
             PLATFORM_ARCH: armhf
           script: |
