@@ -48,7 +48,7 @@ stages:
     BUILD_NUMBER: $(Build.BuildId)
     PLATFORM_ARCH: amd64
     PASSWORD: $(SONIC_PASSWORD)
-    BUILD_OPTIONS: 'SONIC_BUILD_JOBS=$(nproc) ENABLE_DHCP_GRAPH_SERVICE=y SHUTDOWN_BGP_ON_START=y ENABLE_PFCWD_ON_START=y'
+    BUILD_OPTIONS: 'SONIC_BUILD_JOBS=$(nproc) ENABLE_DHCP_GRAPH_SERVICE=y SHUTDOWN_BGP_ON_START=y ENABLE_PFCWD_ON_START=y CACHE_SOURCE=/nfs/dpkg_cache/$(GROUP_NAME)'
     VERSION_PATH: target/sonic.version
     DOCKER_DATA_ROOT_FOR_MULTIARCCH: /data/march/docker
   jobs:
@@ -58,7 +58,7 @@ stages:
         PASSWORD: '$(PASSWORD)'
       jobFilters: ${{ parameters.jobFilters }}
       preSteps:
-        - template: disk_nfs.yml
+        - template: prepare_agent.yml
         - template: ../.azure-pipelines/cleanup.yml
         - checkout: self
           clean: true
@@ -218,14 +218,14 @@ stages:
       jobGroups:
         - name: vs
           script: |
-            make target/sonic-vs.bin target/sonic-vs.img.gz
+            make $BUILD_OPTIONS SONIC_DPKG_CACHE_METHOD=wcache PASSWORD=$PASSWORD target/sonic-vs.bin target/sonic-vs.img.gz
             gzip -kd target/sonic-vs.img.gz
             SONIC_RUN_CMDS="qemu-img convert target/sonic-vs.img -O vhdx -o subformat=dynamic target/sonic-vs.vhdx" make sonic-slave-run
             rm target/sonic-vs.img
         - name: broadcom
           script: |
             set -ex
-            OPTIONS="$BUILD_OPTIONS PASSWORD=$PASSWORD"
+            OPTIONS="$BUILD_OPTIONS SONIC_DPKG_CACHE_METHOD=wcache PASSWORD=$PASSWORD"
 
             echo "==== Building slim images"
             echo "INCLUDE_ACMS = n" > rules/config.user
@@ -260,7 +260,7 @@ stages:
             mv target/release/* target/
         - name: mellanox
           script: |
-            OPTIONS="$BUILD_OPTIONS INCLUDE_RESTAPI=y INCLUDE_VNET_MONITOR=y PASSWORD=$PASSWORD"
+            OPTIONS="$BUILD_OPTIONS SONIC_DPKG_CACHE_METHOD=wcache INCLUDE_RESTAPI=y INCLUDE_VNET_MONITOR=y PASSWORD=$PASSWORD"
             make $OPTIONS INCLUDE_NAT=n INCLUDE_RESTAPI=y INCLUDE_VNET_MONITOR=y target/sonic-mellanox.bin
             make $OPTIONS INCLUDE_NAT=n ENABLE_SYNCD_RPC=y INCLUDE_RESTAPI=y INCLUDE_VNET_MONITOR=y target/docker-syncd-mlnx-rpc.gz || true
             mv target/sonic-mellanox.bin target/release/
