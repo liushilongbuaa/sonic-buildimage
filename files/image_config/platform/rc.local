@@ -287,6 +287,7 @@ if [ -f $FIRST_BOOT_FILE ]; then
     fi
 
     if [ -d /host/image-$SONIC_VERSION/platform/$platform ]; then
+        mv  /host/image-$SONIC_VERSION/platform/$platform/python*sonic-platform-*1.0_all*.deb /usr/share/sonic/device/$platform
         dpkg -i /host/image-$SONIC_VERSION/platform/$platform/*.deb
     fi
 

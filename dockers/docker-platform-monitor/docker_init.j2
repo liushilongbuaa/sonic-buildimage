@@ -78,6 +78,41 @@ else
     SONIC_PLATFORM_API_PYTHON_VERSION=3
 fi
 
+# In certain platforms sonic-platform modules is debian package, Add support for debian packages.
+python2 -c "import sonic_platform" > /dev/null 2>&1 || dpkg -l | grep python-sonic-platform > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    SONIC_PLATFORM_DEB="/usr/share/sonic/platform/python-sonic-platform*.deb"
+    echo "sonic-platform package not installed, attempting to install..."
+    if [ -e ${SONIC_PLATFORM_DEB} ]; then
+       dpkg -i ${SONIC_PLATFORM_DEB}
+       if [ $? -eq 0 ]; then
+          echo "Successfully installed ${SONIC_PLATFORM_DEB}"
+       else
+          echo "Error: Failed to install ${SONIC_PLATFORM_DEB}"
+       fi
+    else
+       echo "Error: Unable to locate ${SONIC_PLATFORM_DEB}"
+    fi
+fi
+python3 -c "import sonic_platform" > /dev/null 2>&1 || dpkg -l | grep python3-sonic-platform > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    SONIC_PLATFORM_DEB="/usr/share/sonic/platform/python3-sonic-platform*.deb"
+    echo "sonic-platform package not installed, attempting to install..."
+    if [ -e ${SONIC_PLATFORM_DEB} ]; then
+       dpkg -i ${SONIC_PLATFORM_DEB}
+       if [ $? -eq 0 ]; then
+          echo "Successfully installed ${SONIC_PLATFORM_DEB}"
+          SONIC_PLATFORM_API_PYTHON_VERSION=3
+       else
+          echo "Error: Failed to install ${SONIC_PLATFORM_DEB}"
+       fi
+    else
+       echo "Error: Unable to locate ${SONIC_PLATFORM_DEB}"
+    fi
+else
+    SONIC_PLATFORM_API_PYTHON_VERSION=3
+fi
+
 {% if CONFIGURED_PLATFORM == "mellanox" %}
 SENSORS_CONF_PATH_GETTER="/usr/share/sonic/platform/get_sensors_conf_path"
 if [ -e $SENSORS_CONF_PATH_GETTER ]; then
