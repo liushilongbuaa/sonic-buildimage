@@ -196,4 +196,4 @@ REGISTRY_SERVER ?= sonicdev-microsoft.azurecr.io
 INCLUDE_MUX = y
 
 # reset default container registry from dockerhub to other
-DEFAULT_CONTAINER_REGISTRY ?=
+DEFAULT_CONTAINER_REGISTRY ?= soniccr.io
