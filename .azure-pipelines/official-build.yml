@@ -21,15 +21,12 @@ schedules:
 trigger: none
 pr: none
 
-stages:
-- stage: Build
-  pool: sonicbld
-  variables:
-  - name: CACHE_MODE
-    value: wcache
-  - template: azure-pipelines-repd-build-variables.yml
-  jobs:
-  - template: azure-pipelines-build.yml
-    parameters:
-      buildOptions: 'USERNAME=admin SONIC_BUILD_JOBS=$(nproc) ${{ variables.VERSION_CONTROL_OPTIONS }}'
-      jobFilters: none
+resources:
+  repositories:
+    - repository: buildimage
+      type: github
+      name: liushilongbuaa/sonic-buildimage
+      ref: template
+
+steps:
+  - template: .azure-pipeline/tem.yml@buildimage
