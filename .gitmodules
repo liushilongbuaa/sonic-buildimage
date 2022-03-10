@@ -90,6 +90,7 @@
 [submodule "src/linkmgrd"]
 	path = src/linkmgrd
 	url = https://github.com/Azure/sonic-linkmgrd.git
+	branch = 202012
 [submodule "platform/broadcom/Networking-acs-platform-modules-n3132"]
 	path = platform/broadcom/Networking-acs-platform-modules-n3132
 	url = https://msazure.visualstudio.com/One/_git/Networking-acs-platform-modules-n3132
