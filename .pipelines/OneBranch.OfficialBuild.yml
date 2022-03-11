@@ -198,6 +198,7 @@ stages:
             SONIC_RUN_CMDS="qemu-img convert target/sonic-vs.img -O vhdx -o subformat=dynamic target/sonic-vs.vhdx" make sonic-slave-run
             rm target/sonic-vs.img
         - name: broadcom
+          timeoutInMinutes: 1440
           script: |
             set -ex
             OPTIONS="$BUILD_OPTIONS SONIC_DPKG_CACHE_METHOD=wcache PASSWORD=$PASSWORD"
