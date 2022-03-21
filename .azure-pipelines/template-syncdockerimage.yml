@@ -18,6 +18,7 @@ jobs:
   variables:
   - group: Debian-Mirror-Common
   steps:
+  - template: cleanup.yml
   - checkout: self
     clean: true
   - ${{ each platform in parameters.platforms }}:

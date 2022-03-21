@@ -11,4 +11,4 @@ steps:
         pid=`sudo cat dockerfs/var/run/docker.pid` ; sudo kill $pid
     fi
     sudo rm -rf $(ls -A1)
-  displayName: "Clean Workspace"
+  displayName: "Master Clean Workspace"
