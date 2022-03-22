@@ -1,44 +1,26 @@
 {% from "dockers/dockerfile-macros.j2" import install_debian_packages, install_python_wheels, copy_files %}
-{% if CONFIGURED_ARCH == "armhf" and MULTIARCH_QEMU_ENVIRON == "y" %}
-FROM multiarch/debian-debootstrap:armhf-buster
-{% elif CONFIGURED_ARCH == "armhf" %}
-FROM {{DOCKER_BASE_ARCH}}/debian:buster
-{% else %}
-FROM ubuntu:18.04
-{% endif %}
+FROM docker-python2-layer-buster
 
 ARG docker_container_name
+RUN [ -f /etc/rsyslog.conf ] && sed -ri "s/%syslogtag%/$docker_container_name#%syslogtag%/;" /etc/rsyslog.conf
 
 # Make apt-get non-interactive
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Clean documentation in FROM image
-RUN find /usr/share/doc -depth \( -type f -o -type l \) ! -name copyright | xargs rm || true
-
-# Clean doc directories that are empty or only contain empty directories
-RUN while [ -n "$(find /usr/share/doc -depth -type d -empty -print -exec rmdir {} +)" ]; do :; done
-RUN rm -rf               \
-    /usr/share/man/*     \
-    /usr/share/groff/*   \
-    /usr/share/info/*    \
-    /usr/share/lintian/* \
-    /usr/share/linda/*   \
-    /var/cache/man/*     \
-    /usr/share/locale/*
-
 # Update apt's cache of available packages
 RUN apt-get update &&       \
     apt-get install -f -y   \
-        rsyslog             \
         gnupg               \
         gnupg1              \
         gnupg2              \
-        curl                \
-        libcurl4            \
         libacl1             \
         libuuid1            \
         libxml2             \
-        python-pip
+        python-dev
+
+RUN apt-get install -y -t buster-backports curl
+
+RUN pip install wheel
 
 {% if docker_acms_debs.strip() -%}
 # Copy locally-built Debian package dependencies
@@ -75,15 +57,11 @@ COPY ["install_acms.sh", "/acms"]
 RUN cd /acms && sh install_acms.sh {{CONFIGURED_ARCH}}
 
 RUN mkdir -p /etc/supervisor /var/log/supervisor
-RUN pip install supervisor==4.1.0
-RUN pip install redis==3.5.0
 
-RUN apt-mark manual python python-setuptools
-
-RUN apt-get autoremove -y python-pip
+RUN apt-get purge -y python-dev
 
 RUN apt-get clean -y      && \
-    apt-get autoclean -   && \
+    apt-get autoclean -y  && \
     apt-get autoremove -y && \
     rm -rf /debs
 RUN rm -rf /var/lib/apt/lists/*
@@ -98,8 +76,5 @@ COPY ["critical_processes", "/etc/supervisor"]
 # Download Root Certificate
 RUN python /usr/bin/CA_cert_downloader.py
 
-COPY ["etc/rsyslog.conf", "/etc/rsyslog.conf"]
-COPY ["etc/rsyslog.d/*", "/etc/rsyslog.d/"]
-RUN [ -f /etc/rsyslog.conf ] && sed -ri "s/%syslogtag%/$docker_container_name#%syslogtag%/;" /etc/rsyslog.conf
 
 ENTRYPOINT ["/usr/local/bin/supervisord"]

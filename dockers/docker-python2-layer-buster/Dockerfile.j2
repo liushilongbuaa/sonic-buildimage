@@ -1,0 +1,45 @@
+{% from "dockers/dockerfile-macros.j2" import install_debian_packages, install_python_wheels, copy_files %}
+FROM docker-config-engine-buster
+
+# Make apt-get non-interactive
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get install -f -y python python-dev python-pip
+RUN pip2 install --upgrade 'pip<21'
+RUN apt-get purge -y python-pip
+RUN pip2 install 'setuptools==40.8.0'
+
+{% if docker_python2_layer_buster_debs.strip() -%}
+# Copy locally-built Debian package dependencies
+{{ copy_files("debs/", docker_python2_layer_buster_debs.split(' '), "/debs/") }}
+
+# Install locally-built Debian packages and implicitly install their dependencies
+{{ install_debian_packages(docker_python2_layer_buster_debs.split(' ')) }}
+{%- endif %}
+
+{% if docker_python2_layer_buster_pydebs.strip() -%}
+# Copy locally-built Debian package dependencies
+{{ copy_files("python-debs/", docker_python2_layer_buster_pydebs.split(' '), "/debs/") }}
+
+# Install locally-built Debian packages and implicitly install their dependencies
+{{ install_debian_packages(docker_python2_layer_buster_pydebs.split(' ')) }}
+{%- endif %}
+
+{% if docker_python2_layer_buster_whls.strip() -%}
+# Copy locally-built Python wheel dependencies
+{{ copy_files("python-wheels/", docker_python2_layer_buster_whls.split(' '), "/python-wheels/") }}
+
+# Install locally-built Python wheel dependencies
+{{ install_python_wheels(docker_python2_layer_buster_whls.split(' ')) }}
+{% endif %}
+
+# Clean up
+RUN apt-get purge -y           \
+        build-essential        \
+        python-dev         && \
+    apt-get clean -y        && \
+    apt-get autoclean -y    && \
+    apt-get autoremove -y   && \
+    rm -rf /debs               \
+           /python-wheels      \
+           ~/.cache
