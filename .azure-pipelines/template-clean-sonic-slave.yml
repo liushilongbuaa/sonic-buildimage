@@ -1,5 +1,6 @@
 steps:
 - script: |
+    set -x
     containers=$(docker container ls -a | grep "sonic-slave" | awk '{ print $1 }')
     [ -n "$containers" ] && docker container rm -f containers
     docker images | grep "^<none>" | awk '{print$3}' | xargs -i docker rmi {}
