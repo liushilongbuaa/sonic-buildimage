@@ -208,8 +208,13 @@ stages:
             echo "INCLUDE_ACMS = n" > rules/config.user
             echo "INCLUDE_MUX = n" >> rules/config.user
             echo "INCLUDE_KUBERNETES = n" >> rules/config.user
-            make $OPTIONS target/sonic-broadcom.bin target/sonic-aboot-broadcom.swi
+            make $OPTIONS target/sonic-broadcom.bin
             mv target/sonic-broadcom.bin target/sonic-broadcom-slim.bin
+            echo "INCLUDE_ACMS = y" > rules/config.user
+            echo "INCLUDE_MUX = n" >> rules/config.user
+            echo "INCLUDE_KUBERNETES = n" >> rules/config.user
+            echo "INCLUDE_RESTAPI = y" >> rules/config.user
+            make $OPTIONS target/sonic-aboot-broadcom.swi
             mv target/sonic-aboot-broadcom.swi target/sonic-aboot-broadcom-slim.swi
             rm rules/config.user
             echo "==== Finished building slim images"
