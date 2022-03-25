@@ -55,8 +55,6 @@ stages:
     parameters:
       jobFilters: ${{ parameters.jobFilters }}
       buildOptions: '${{ variables.VERSION_CONTROL_OPTIONS }} SONIC_BUILD_JOBS=$(nproc) ENABLE_IMAGE_SIGNATURE=y'
-      preSteps:
-      - template: .azure-pipelines/template-clean-sonic-slave.yml@buildimage
 - stage: UpgradeVersions
   jobs:
   - job: UpgradeVersions
