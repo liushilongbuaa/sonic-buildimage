@@ -287,6 +287,11 @@ if [ -f $FIRST_BOOT_FILE ]; then
     fi
 
     if [ -d /host/image-$SONIC_VERSION/platform/$platform ]; then
+        PYTHON_PLATFORM_MODULES_DEB="/host/image-$SONIC_VERSION/platform/$platform/python*sonic-platform-*1.0_all*.deb"
+        if ls ${PYTHON_PLATFORM_MODULES_DEB} 2>/dev/null 1>&2; then
+            dpkg -i ${PYTHON_PLATFORM_MODULES_DEB}
+            mv  ${PYTHON_PLATFORM_MODULES_DEB} /usr/share/sonic/device/$platform
+        fi
         dpkg -i /host/image-$SONIC_VERSION/platform/$platform/*.deb
     fi
 
