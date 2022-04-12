@@ -318,7 +318,7 @@ stages:
           - script: |
               OPTIONS="$BUILD_OPTIONS ENABLE_NAT=n PASSWORD=$PASSWORD"
               make $OPTIONS target/sonic-cisco-8000.bin
-              make $OPTIONS ENABLE_SYNCD_RPC=y target/docker-syncd-rpc.gz
+              make $OPTIONS ENABLE_SYNCD_RPC=y target/docker-syncd-cisco-rpc.gz
             env:
               PASSWORD: '$(PASSWORD)'
             displayName: JobScript
