@@ -7,7 +7,6 @@ jobs:
   steps:
   - checkout: self
     clean: true
-    submodules: recursive
   - script: |
       set -ex
       branch=$(Build.SourceBranchName)
