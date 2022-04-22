@@ -1,6 +1,5 @@
 pr: none
 trigger: none
-schedules: none
 
 steps:
   - checkout: self
