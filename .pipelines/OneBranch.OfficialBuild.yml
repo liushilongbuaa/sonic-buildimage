@@ -10,6 +10,16 @@ schedules:
   always: false
 trigger: none
 pr: none
+resources:
+  repositories:
+  - repository: acs-buildimage
+    type: git
+    name: One/Networking-acs-buildimage
+    ref: internal
+  - repository: cisco-8000
+    type: github
+    name: Cisco-8000-sonic/platform-cisco-8000
+    endpoint: cisco-connection
 
 name: $(TeamProject)_$(Build.DefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
@@ -27,13 +37,6 @@ parameters:
 - name: 'trusty8LinkPath'
   type: string
   default: 'default'
-
-resources:
-  repositories:
-  - repository: cisco-8000
-    type: github
-    name: Cisco-8000-sonic/platform-cisco-8000
-    endpoint: cisco-connection
 
 variables:
 - group: SONIC-BUILD-VG-1
@@ -53,14 +56,14 @@ stages:
     DOCKER_DATA_ROOT_FOR_MULTIARCCH: /data/march/docker
     PACKAGE_URL: "https://sonicstorage.blob.core.windows.net/packages"
   jobs:
-  - template: ../.azure-pipelines/azure-pipelines-job-groups.yml
+  - template: .azure-pipelines/azure-pipelines-job-groups.yml@acs-buildimage
     parameters:
       scriptEnv:
         PASSWORD: '$(PASSWORD)'
       jobFilters: ${{ parameters.jobFilters }}
       preSteps:
-        - template: prepare_agent.yml
-        - template: ../.azure-pipelines/cleanup.yml
+        - template: .pipelines/prepare_agent.yml@acs-buildimage
+        - template: .azure-pipelines/cleanup.yml@acs-buildimage
         - checkout: self
           clean: true
           submodules: recursive
@@ -76,11 +79,12 @@ stages:
             . functions.sh
             SONIC_VERSION=$(sonic_get_version)
             echo SONIC_VERSION=${SONIC_VERSION} > sonic.properties
-            LATEST_TAG=$(git tag --points-at HEAD | grep -v -e '.*-merge' | head -n 1)
+            LATEST_TAG=$(git describe --tags --abbrev=0)
+            [[ $LATEST_TAG == *-merge ]] && LATEST_TAG=
             mkdir -p target/release
             rm -f target/sonic-installers
             echo $SONIC_VERSION > $VERSION_PATH
-            echo $LATEST_TAG > target/sonic.tag 
+            echo $LATEST_TAG > target/sonic.tag
             echo "SONIC_VERSION=$SONIC_VERSION, LATEST_TAG=$LATEST_TAG"
             echo "##vso[task.setvariable variable=SONIC_VERSION]$SONIC_VERSION"
             echo "##vso[task.setvariable variable=LATEST_TAG]$LATEST_TAG"
@@ -93,7 +97,7 @@ stages:
         - script: |
             for image in `ls target | grep -E "\.(swi|bin|raw|deb)$"`; do
               version_image=$(echo $image | sed -E "s/(-dbg\.\w+|\.\w+)$/-$(SONIC_VERSION)\1/")
-              echo "$image,$version_image" >> target/sonic-installers 
+              echo "$image,$version_image" >> target/sonic-installers
               cp -f target/$image target/$version_image
             done
           displayName: "Copy installers"
@@ -177,8 +181,8 @@ stages:
             BRANCH=$(Build.SourceBranchName)
             for f in $DOCKERS; do
               echo $f
-              ./push_docker.sh $f $REGISTRY_SERVER $PORT $REGISTRY_USERNAME "$REGISTRY_PASSWD" $SONIC_VERSION $BRANCH
-              ./push_docker.sh $f $REGISTRY_SERVER $PORT $REGISTRY_USERNAME "$REGISTRY_PASSWD" latest $BRANCH
+              ./push_docker.sh $f $REGISTRY_SERVER_INTERNAL $PORT $REGISTRY_USERNAME "$REGISTRY_PASSWD" $SONIC_VERSION $BRANCH
+              ./push_docker.sh $f $REGISTRY_SERVER_INTERNAL $PORT $REGISTRY_USERNAME "$REGISTRY_PASSWD" latest $BRANCH
             done
           env:
             REGISTRY_PASSWD: $(REGISTRY_PASSWD)
@@ -233,7 +237,7 @@ stages:
             echo "==== Building saiserver docker"
             make $OPTIONS ENABLE_SYNCD_RPC=y target/docker-saiserver-brcm.gz
             echo "==== Finished building saiserver docker"
-            
+
             echo "==== Building brcm saiserverv2 docker and sai python header"
             make BLDENV=buster SAITHRIFT_V2=y INSTALL_DEBUG_TOOLS=y $OPTIONS -f Makefile.work target/docker-saiserverv2-brcm.gz
             cp target/debs/buster/python-saithriftv2_0.9.4_amd64.deb target/python-saithriftv2_0.9.4_amd64.deb
