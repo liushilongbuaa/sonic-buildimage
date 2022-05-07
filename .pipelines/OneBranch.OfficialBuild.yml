@@ -75,6 +75,7 @@ stages:
           path: s/platform/cisco-8000
           displayName: 'Checkout cisco-8000'
         - script: |
+            unset REGISTRY_SERVER
             git checkout -b $(Build.SourceBranchName)
             . functions.sh
             SONIC_VERSION=$(sonic_get_version)
