@@ -298,6 +298,14 @@ stages:
               tar xvfz $(System.ArtifactsDirectory)/artifactory-*.tar.gz -C platform/cisco-8000
             displayName: 'Setup cisco artifacts'
           - script: |
+              if [ ! -e platform/cisco-8000/device/x86_64-8102_64h_o-r0/Cisco-8102-C64 ]; then
+                echo "hwsku Cisco-8102-C64 doesn't exist, copy from 64x100Gb"
+                cp -r platform/cisco-8000/device/x86_64-8102_64h_o-r0/64x100Gb platform/cisco-8000/device/x86_64-8102_64h_o-r0/Cisco-8102-C64
+              else
+                echo "hwsku Cisco-8102-C64 exist"
+              fi
+            displayName: 'Setup cisco hwsku Cisco-8102-C64'
+          - script: |
               set -ex
               filename=$(find platform/cisco-8000/artifactory/sonic -name cisco-* -type f | head -n 1)
               if [ -z "$filename" ]; then
