@@ -1,5 +1,5 @@
 steps:
-- ${{ eq(variables['Build.Reason'], 'PullRequest') }}:
+- ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
   - script: |
       set -ex
       for i in $(git diff HEAD~ | grep '^diff ' | awk '{print$NF}' | sed 's#b/##')
