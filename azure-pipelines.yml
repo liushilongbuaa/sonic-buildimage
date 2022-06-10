@@ -77,6 +77,7 @@ stages:
 
 - stage: Test
   dependsOn: BuildVS
+  condition: and(ne(stageDependencies.BuildVS.vs.outputs['SetVar.SKIP_VSTEST'], 'YES'), succeeded())
   variables:
   - name: inventory
     value: veos_vtb
@@ -86,7 +87,6 @@ stages:
   jobs:
   - job:
     pool: sonictest
-    condition: ne(stageDependencies.BuildVS.vs.outputs['SetVar.SKIP_VSTEST'], 'YES')
     displayName: "vstest"
     timeoutInMinutes: 60
     steps:
@@ -134,7 +134,6 @@ stages:
 
   - job: t0_part1
     pool: sonictest
-    condition: ne(stageDependencies.BuildVS.vs.outputs['SetVar.SKIP_VSTEST'], 'YES')
     displayName: "kvmtest-t0-part1"
     timeoutInMinutes: 360
 
@@ -149,7 +148,6 @@ stages:
 
   - job: t0_part2
     pool: sonictest
-    condition: ne(stageDependencies.BuildVS.vs.outputs['SetVar.SKIP_VSTEST'], 'YES')
     displayName: "kvmtest-t0-part2"
     timeoutInMinutes: 360
 
@@ -164,12 +162,12 @@ stages:
 
   - job:
     pool: sonictest
-    condition: and(ne(stageDependencies.BuildVS.vs.outputs['SetVar.SKIP_VSTEST'], 'YES'), always())
     displayName: "kvmtest-t0"
     timeoutInMinutes: 360
     dependsOn:
     - t0_part1
     - t0_part2
+    condition: always()
     variables:
       resultOfPart1: $[ dependencies.t0_part1.result ]
       resultOfPart2: $[ dependencies.t0_part2.result ]
@@ -186,7 +184,6 @@ stages:
 
   - job:
     pool: sonictest-t1-lag
-    condition: ne(stageDependencies.BuildVS.vs.outputs['SetVar.SKIP_VSTEST'], 'YES')
     displayName: "kvmtest-t1-lag"
     timeoutInMinutes: 300
 
@@ -200,7 +197,6 @@ stages:
 
   - job:
     pool: sonictest-sonic-t0
-    condition: ne(stageDependencies.BuildVS.vs.outputs['SetVar.SKIP_VSTEST'], 'YES')
     displayName: "kvmtest-t0-sonic"
     timeoutInMinutes: 360
 

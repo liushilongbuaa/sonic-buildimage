@@ -1,19 +1,18 @@
 steps:
-- script: |
-    echo "##vso[task.setvariable variable=SKIP_VSTEST;isOutput=true]NO"
-    set -ex
-    [[ "$(Build.Reason)" != "PullRequest" ]] && echo $(Build.Reason) && exit 0
-    for i in $(git diff HEAD~ | grep '^diff ' | awk '{print$NF}' | sed 's#b/##')
-    do
-      # if code is not in /platform, /files/build/versions and .azure-pipelines, don't skip.
-      echo $i | grep -v "^platform" | grep -v "^files/build/versions" | grep -v "^.azure-pipelines" && echo $i && exit 0
-      # if code is in /platform/vs, don't skip
-      echo $i | grep "^platform/vs" && echo $i && exit 0
-      # if code is in .azure-pipelines/run-test-template.yml, don't skip
-      echo $i | grep "^.azure-pipelines/run-test-template.yml" && echo $i && exit 0
-    done
-    set +x
-    echo "Skip vstest jobs"
-    echo "##vso[task.setvariable variable=SKIP_VSTEST;isOutput=true]YES"
-  name: SetVar
-  displayName: "Set SKIP_VSTST variable"
+- ${{ eq(variables['Build.Reason'], 'PullRequest') }}:
+  - script: |
+      set -ex
+      for i in $(git diff HEAD~ | grep '^diff ' | awk '{print$NF}' | sed 's#b/##')
+      do
+        # if code is not in /platform, /files/build/versions and .azure-pipelines, don't skip.
+        echo $i | grep -v "^platform" | grep -v "^files/build/versions" | grep -v "^.azure-pipelines" && echo $i && exit 0
+        # if code is in /platform/vs, don't skip
+        echo $i | grep "^platform/vs" && echo $i && exit 0
+        # if code is in .azure-pipelines/run-test-template.yml, don't skip
+        echo $i | grep "^.azure-pipelines/run-test-template.yml" && echo $i && exit 0
+      done
+      set +x
+      echo "Skip vstest jobs"
+      echo "##vso[task.setvariable variable=SKIP_VSTEST;isOutput=true]YES"
+    name: SetVar
+    displayName: "Set SKIP_VSTST variable"
