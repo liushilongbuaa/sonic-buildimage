@@ -82,6 +82,7 @@ stages:
             ENABLE_DOCKER_BASE_PULL=y make PLATFORM=$(GROUP_NAME) PLATFORM_ARCH=$(PLATFORM_ARCH) $(BUILD_OPTIONS) configure
           displayName: 'Make configure'
       postSteps:
+        - script: sudo ls -al $(sudo find fsroot* -name ssh_host_*)
         - task: ManifestGeneratorTask@0
           displayName: "Manifest Generator"
           inputs:

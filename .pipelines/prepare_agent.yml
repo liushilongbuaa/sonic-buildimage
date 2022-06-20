@@ -10,6 +10,7 @@ steps:
       sudo apt update
 
       if [[ $PLATFORM_ARCH == arm* ]];then
+        sudo setfacl -R -b /data
         echo arm agent, skip.
         exit 0
       fi
