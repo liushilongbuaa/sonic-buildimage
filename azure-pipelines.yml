@@ -55,6 +55,7 @@ stages:
       submodules: recursive
       clean: true
     - script: |
+        set -x
         git submodule
         cd src/sonic-swss-common
         git remote -v
