@@ -56,3 +56,5 @@ stages:
       clean: true
     - script: |
         git submodule
+        cd src/sonic-swss-common
+        git remote -v
