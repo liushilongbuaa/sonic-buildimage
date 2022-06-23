@@ -59,6 +59,9 @@ ifeq ($(NOBUSTER), 0)
 	make -f Makefile.work buster
 endif
 
+bullseye:
+	@echo HAHAHAH
+
 init:
 	@echo "+++ Making $@ +++"
 	make -f Makefile.work $@
