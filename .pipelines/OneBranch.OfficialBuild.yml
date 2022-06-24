@@ -265,7 +265,7 @@ stages:
         - name: barefoot
           script: |
             sudo modprobe overlay
-            OPTIONS="$BUILD_OPTIONS ENABLE_NAT=n PASSWORD=$PASSWORD"
+            OPTIONS="$BUILD_OPTIONS ENABLE_NAT=n INCLUDE_RESTAPI=y PASSWORD=$PASSWORD"
             make $OPTIONS ENABLE_RESTAPI=y target/docker-syncd-bfn-rpc.gz
             make $OPTIONS target/sonic-aboot-barefoot.swi
         - name: marvell-armhf
