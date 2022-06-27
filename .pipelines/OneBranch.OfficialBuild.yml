@@ -265,7 +265,7 @@ stages:
         - name: barefoot
           script: |
             sudo modprobe overlay
-            OPTIONS="$BUILD_OPTIONS ENABLE_NAT=n PASSWORD=$PASSWORD"
+            OPTIONS="$BUILD_OPTIONS ENABLE_NAT=n INCLUDE_RESTAPI=y PASSWORD=$PASSWORD"
             make $OPTIONS ENABLE_RESTAPI=y target/docker-syncd-bfn-rpc.gz
             make $OPTIONS target/sonic-aboot-barefoot.swi
         - name: marvell-armhf
@@ -330,7 +330,7 @@ stages:
             condition: ne(variables['Build.Reason'], 'PullRequest')
             displayName: "Override cisco sai packages"
           - script: |
-              OPTIONS="$BUILD_OPTIONS ENABLE_NAT=n PASSWORD=$PASSWORD"
+              OPTIONS="$BUILD_OPTIONS ENABLE_NAT=n INCLUDE_RESTAPI=y PASSWORD=$PASSWORD"
               make $OPTIONS target/sonic-cisco-8000.bin
               make $OPTIONS ENABLE_SYNCD_RPC=y target/docker-syncd-cisco-rpc.gz
             env:
