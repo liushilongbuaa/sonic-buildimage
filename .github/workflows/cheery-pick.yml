@@ -1,0 +1,16 @@
+name: CherryPick
+on:
+  pull_request_target:
+    types:
+    - closed
+    branches:
+    - master
+
+jobs:
+  if_merged:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+    - run: |
+        echo ${{ github.event.pull_request.labels }}
+        echo The PR is merged.
