@@ -12,6 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - run: |
-        Array = ${{ github.event.pull_request.labels }}
+        Array=${{ github.event.pull_request.labels }}
         echo "${Array[*]}"
         echo The PR is merged.
