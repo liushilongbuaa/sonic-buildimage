@@ -2,16 +2,19 @@ name: CherryPick
 on:
   pull_request_target:
     types:
+    - labeled
     - closed
     branches:
     - master
 
 jobs:
   if_merged:
-    if: github.event.pull_request.merged == true
+#    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-    - run: |
+    - name: Test
+      env: 
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: |
         echo $GITHUB_CONTEXT
         echo The PR is merged.
-      GITHUB_CONTEXT: ${{ toJson(github) }}
