@@ -24,6 +24,7 @@ jobs:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: |
         set -e
+        echo $GITHUB_CONTEXT | jq
         echo $GITHUB_CONTEXT | jq ".event.pull_request.labels"
         echo HHHHHHHHHHHHHHHHHHHHHHHHHHH1
         exit 1
