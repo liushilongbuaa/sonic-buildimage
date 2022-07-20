@@ -74,5 +74,6 @@ create_pr(){
 list_comments(){
   TOKEN_LOCAL=$1
   ISSUES_URL=$(echo $2| sed 's#/$##')
+  >&2 echo curl -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${TOKEN_LOCAL}\"  ${ISSUES_URL}/comments
   curl -H "Accept: application/vnd.github+json" -H "Authorization: token ${TOKEN_LOCAL}"  ${ISSUES_URL}/comments
 }
