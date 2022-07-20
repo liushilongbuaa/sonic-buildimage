@@ -18,6 +18,10 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo $GITHUB_CONTEXT | jq
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
     - name: Main
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
