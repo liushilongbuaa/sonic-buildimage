@@ -3,9 +3,15 @@
 #
 # see: dh_installdeb(1)
 
+sudo chmod +x /usr/local/bin/udev_prefix.sh
+sudo chmod +x /usr/local/bin/popmsg.sh
+sudo chmod +x /usr/local/bin/reload_udev.sh
+
 sh /usr/sbin/nokia-7215_plt_setup.sh
 systemctl enable nokia-7215init.service
 systemctl start nokia-7215init.service
+
+/usr/local/bin/reload_udev.sh
 
 exit 0
 
