@@ -35,6 +35,7 @@ jobs:
         pr_id=$(echo $GITHUB_CONTEXT | jq ".event.number" | sed 's/"//g')
         pr_body=$(echo $GITHUB_CONTEXT | jq ".event.pull_request.body" | sed 's/"//g')
         issues_url=$(echo $GITHUB_CONTEXT | jq ".event.pull_request._links.issue.href" | sed 's/"//g')
+        pr_url=$(echo $issues_url | sed 's#api.github.com/repos#github.com#' | sed 's/issues/pull/')
         base_url=$(echo $issues_url | awk -F'/issues' '{print$1}')
         repo_url=$(echo $GITHUB_CONTEXT | jq ".event.pull_request._links.html.href" | awk -F'pull' '{print$1}' | sed 's/"//g')
         labels_count=$(echo $GITHUB_CONTEXT | jq ".event.pull_request.labels | length")
@@ -43,10 +44,16 @@ jobs:
         echo SHA:           $sha
         echo PRID:          $pr_id
         echo issues_url:    $issues_url
+        echo pr_url:        $pr_url
         echo base_url:      $base_url
         echo repo_url:      $repo_url
         echo labels_count:  $labels_count
         echo =============================
+        if [[ $(echo $GITHUB_CONTEXT | jq ".event.action" | sed 's/"//g') == "labeled" ]] && \
+           [[ $(echo $GITHUB_CONTEXT | jq ".event.label.name" | sed 's/"//g') != "Request for ${{ matrix.branch }} Branch" ]];then
+          echo "Newly added label didn't match."
+          exit 0
+        fi
         create_pr=''
         for (( i=0; i<$labels_count; i++ ))
         do
@@ -90,24 +97,26 @@ jobs:
         else
           # Create PR to release branch
           git push mssonicbld HEAD:${pr_id}-${{ matrix.branch }} -f
-          result=$(create_pr ${{ secrets.TOKEN }} ${base_url} "auto cherry-pick ${pr_id} into ${{ matrix.branch }}" "mssonicbld:${pr_id}-${{ matrix.branch }}" "${{ matrix.branch }}")
+          result=$(create_pr ${{ secrets.TOKEN }} ${base_url} "[action] Auto cherry-pick PR:#${pr_id} into ${{ matrix.branch }} branch" "mssonicbld:${pr_id}-${{ matrix.branch }}" "${{ matrix.branch }}")
           if [[ $(expr length "$result") -lt "10" ]];then
             echo result:
             echo $result
             exit 3
           fi
           new_issue_url=$(echo $result | jq '.issue_url' | sed 's/"//g')
+          new_pr_rul=$(echo $new_issue_url | sed 's#api.github.com/repos#github.com#' | sed 's/issues/pull/')
           echo new_issue_url: $new_issue_url
+          echo new_pr_rul:    $new_pr_rul
 
           # Add label
           add_label "${{ secrets.GITHUB_TOKEN }}" "${issues_url}" "Created PR to ${{ matrix.branch }} Branch"
           echo Add label Created PR to ${{ matrix.branch }} Branch
 
           # Add comment to new PR
-          add_comment ${{ secrets.GITHUB_TOKEN }} ${new_issue_url} "Original PR: ${issues_url}"
+          add_comment ${{ secrets.GITHUB_TOKEN }} ${new_issue_url} "Original PR: ${pr_url}"
           echo Add comment to new PR
 
           # Add comment to old PR
-          add_comment ${{ secrets.GITHUB_TOKEN }} ${issues_url} "Cherry-pick PR to ${{ matrix.branch }}: ${new_issue_url}"
+          add_comment ${{ secrets.GITHUB_TOKEN }} ${issues_url} "Cherry-pick PR to ${{ matrix.branch }}: ${new_pr_rul}"
           echo Add comment to old PR
         fi
