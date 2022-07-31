@@ -1,0 +1,25 @@
+!
+! template: bgpd/templates/msft.general/v4.vm/instance.conf.j2
+!
+  neighbor {{ neighbor_addr }} remote-as {{ bgp_session['asn'] }}
+  neighbor {{ neighbor_addr }} description {{ bgp_session['name'] }}
+  neighbor {{ neighbor_addr }} ebgp-multihop 255
+  neighbor {{ neighbor_addr }} update-source eth0
+
+  address-family ipv4 unicast
+    neighbor {{ neighbor_addr}} route-map FROM_TIER0_V4 in
+    neighbor {{ neighbor_addr }} route-map TO_TIER0_V4 out
+    neighbor {{ neighbor_addr }} soft-reconfiguration inbound
+    neighbor {{ neighbor_addr }} activate
+    exit-address-family
+
+  address-family ipv6 unicast
+    neighbor {{ neighbor_addr }} route-map FROM_TIER0_V6 in
+    neighbor {{ neighbor_addr }} route-map TO_TIER0_V6 out
+    neighbor {{ neighbor_addr }} soft-reconfiguration inbound
+    neighbor {{ neighbor_addr }} activate
+    exit-address-family
+
+!
+! end of template: /gpd/templates/msft.general/v4.vm/instance.conf.j2
+!

@@ -103,7 +103,6 @@ class BGPPeerMgrBase(Manager):
 
         deps = [
             ("CONFIG_DB", swsscommon.CFG_DEVICE_METADATA_TABLE_NAME, "localhost/bgp_asn"),
-            ("CONFIG_DB", swsscommon.CFG_LOOPBACK_INTERFACE_TABLE_NAME, "Loopback0"),
             ("LOCAL", "local_addresses", ""),
             ("LOCAL", "interfaces", ""),
         ]
@@ -124,6 +123,13 @@ class BGPPeerMgrBase(Manager):
 
         if self.check_deployment_id:
             deps.append(("CONFIG_DB", swsscommon.CFG_DEVICE_METADATA_TABLE_NAME, "localhost/deployment_id"))
+
+        self.use_loopback = 'bgp' not in self.constants \
+                            or 'use_loopback' not in self.constants['bgp'] \
+                            or self.constants['bgp']['use_loopback']
+
+        if self.use_loopback:
+            deps.append(("CONFIG_DB", swsscommon.CFG_LOOPBACK_INTERFACE_TABLE_NAME, "Loopback0"))
 
         super(BGPPeerMgrBase, self).__init__(
             common_objs,
@@ -161,7 +167,7 @@ class BGPPeerMgrBase(Manager):
         bgp_asn = self.directory.get_slot("CONFIG_DB", swsscommon.CFG_DEVICE_METADATA_TABLE_NAME)["localhost"]["bgp_asn"]
         #
         lo0_ipv4 = self.get_lo0_ipv4()
-        if lo0_ipv4 is None:
+        if lo0_ipv4 is None and self.use_loopback:
             log_warn("Loopback0 ipv4 address is not presented yet")
             return False
         #
@@ -190,7 +196,6 @@ class BGPPeerMgrBase(Manager):
             'vrf': vrf,
             'neighbor_addr': nbr,
             'bgp_session': data,
-            'loopback0_ipv4': lo0_ipv4,
             'CONFIG_DB__LOOPBACK_INTERFACE':{ tuple(key.split('|')) : {} for key in self.directory.get_slot("CONFIG_DB", swsscommon.CFG_LOOPBACK_INTERFACE_TABLE_NAME)
                                                                          if '|' in key }
         }
@@ -200,6 +205,9 @@ class BGPPeerMgrBase(Manager):
                 log_info("DEVICE_NEIGHBOR_METADATA is not ready for neighbor '%s' - '%s'" % (nbr, data['name']))
                 return False
             kwargs['CONFIG_DB__DEVICE_NEIGHBOR_METADATA'] = neigmeta
+
+        if self.use_loopback:
+            kwargs['loopback0_ipv4'] = lo0_ipv4
 
         tag = data['name'] if 'name' in data else nbr
         self.peer_group_mgr.update(tag, **kwargs)
