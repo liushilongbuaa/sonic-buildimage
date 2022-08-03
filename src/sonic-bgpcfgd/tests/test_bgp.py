@@ -33,12 +33,41 @@ def constructor():
     m.directory.put("CONFIG_DB", swsscommon.CFG_DEVICE_METADATA_TABLE_NAME, "localhost", {"bgp_asn": "65100"})
     m.directory.put("CONFIG_DB", swsscommon.CFG_LOOPBACK_INTERFACE_TABLE_NAME, "Loopback0|11.11.11.11/32", {})
     m.directory.put("CONFIG_DB", swsscommon.CFG_LOOPBACK_INTERFACE_TABLE_NAME, "Loopback0|FC00:1::32/128", {})
+    m.directory.put("CONFIG_DB", swsscommon.CFG_DEVICE_NEIGHBOR_METADATA_TABLE_NAME, "ARISTA01T0", {"type": "ToRRouter", "deployment_id": "4"})
     m.directory.put("LOCAL", "local_addresses", "30.30.30.30", {"interface": "Ethernet4|30.30.30.30/24"})
     m.directory.put("LOCAL", "local_addresses", "fc00:20::20", {"interface": "Ethernet8|fc00:20::20/96"})
     m.directory.put("LOCAL", "interfaces", "Ethernet4|30.30.30.30/24", {"anything": "anything"})
     m.directory.put("LOCAL", "interfaces", "Ethernet8|fc00:20::20/96", {"anything": "anything"})
 
     return m
+
+# Constructs a managers_bgp with mgmt address and no loopback address
+def constructor_mgmt():
+    cfg_mgr = MagicMock()
+    constants = load_constants()['constants']
+    constants['bgp']['use_loopback'] = False
+
+    common_objs = {
+        'directory': Directory(),
+        'cfg_mgr':   cfg_mgr,
+        'tf':        TemplateFabric(TEMPLATE_PATH),
+        'constants': constants
+    }
+    
+    m = bgpcfgd.managers_bgp.BGPPeerMgrBase(common_objs, "CONFIG_DB", "BGP_MGMT_NEIGHBORS", "general", True)
+    assert m.peer_type == "general"
+    
+    m.directory.put("CONFIG_DB", swsscommon.CFG_DEVICE_METADATA_TABLE_NAME, "localhost", {"bgp_asn": "65100"})
+    m.directory.put("CONFIG_DB", swsscommon.CFG_MGMT_INTERFACE_TABLE_NAME, "eth0|11.11.11.11/32", {})
+    m.directory.put("CONFIG_DB", swsscommon.CFG_MGMT_INTERFACE_TABLE_NAME, "eth0|FC00:1::32/128", {})
+    m.directory.put("CONFIG_DB", swsscommon.CFG_DEVICE_NEIGHBOR_METADATA_TABLE_NAME, "ARISTA01T0", {"type": "ToRRouter", "deployment_id": "4"})
+    m.directory.put("LOCAL", "local_addresses", "11.11.11.11", {"interface": "eth0|11.11.11.11/24"})
+    m.directory.put("LOCAL", "local_addresses", "FC00:1::32", {"interface": "eth0|FC00:1::32/96"})
+    m.directory.put("LOCAL", "interfaces", "eth0|11.11.11.11/24", {"anything": "anything"})
+    m.directory.put("LOCAL", "interfaces", "eth0|FC00:1::32/96", {"anything": "anything"})
+
+    return m
+
 
 @patch('bgpcfgd.managers_bgp.log_info')
 def test_update_peer_up(mocked_log_info): 
@@ -77,7 +106,12 @@ def test_update_peer_invalid_admin_status(mocked_log_err):
 
 def test_add_peer():
     m = constructor()
-    res = m.set_handler("30.30.30.1", {"local_addr": "30.30.30.30", "admin_status": "up"})
+    res = m.set_handler("30.30.30.1", {'asn': '64001', 'holdtime': '180', 'keepalive': '60', 'local_addr': '30.30.30.30', 'name': 'ARISTA01T0'})
+    assert res, "Expect True return value"
+
+def test_add_peer_mgmt():
+    m = constructor_mgmt()
+    res = m.set_handler("11.11.11.10", {'asn': '64001', 'holdtime': '180', 'keepalive': '60', 'local_addr': '11.11.11.11', 'name': 'ARISTA01T0'})
     assert res, "Expect True return value"
 
 def test_add_peer_ipv6():
