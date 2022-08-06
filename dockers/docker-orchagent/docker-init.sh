@@ -14,6 +14,7 @@ CFGGEN_PARAMS=" \
     -t /usr/share/sonic/templates/wait_for_link.sh.j2,/usr/bin/wait_for_link.sh \
 "
 VLAN=$(sonic-cfggen $CFGGEN_PARAMS)
+SUBTYPE=$(sonic-cfggen -d -v "DEVICE_METADATA['localhost']['subtype']")
 
 chmod +x /usr/bin/wait_for_link.sh
 
@@ -26,6 +27,10 @@ fi
 if [ "$VLAN" != "" ]; then
     cp /usr/share/sonic/templates/arp_update.conf /etc/supervisor/conf.d/
     cp /usr/share/sonic/templates/ndppd.conf /etc/supervisor/conf.d/
+fi
+
+if [ "$SUBTYPE" == "DualToR" ]; then
+    cp /usr/share/sonic/templates/tunnel_packet_handler.conf /etc/supervisor/conf.d/
 fi
 
 exec /usr/local/bin/supervisord
