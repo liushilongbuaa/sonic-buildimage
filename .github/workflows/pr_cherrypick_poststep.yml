@@ -37,7 +37,7 @@ jobs:
         echo base_ref:      $base_ref
         echo ${TOKEN} | gh auth login --with-token
         echo =============================
-        comments=$(gh pr view $pr_url --json comments)
+        comments=$(gh pr view $pr_url --json comments | jq '.comments')
 
         count=$(echo $comments | jq 'length')
         echo comment count: $count
@@ -51,7 +51,7 @@ jobs:
         echo origin_pr_url:     $origin_pr_url
         # Add label
         if [[ "$origin_pr_url" == "" ]];then
-          echo No comment from github-actions[bot]
+          echo No comment from mssonicbld
           exit 0
         fi
         gh pr edit $origin_pr_url --add-label "Included in ${base_ref} Branch"
