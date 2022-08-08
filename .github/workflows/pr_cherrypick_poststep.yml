@@ -43,7 +43,7 @@ jobs:
         echo comment count: $count
         for (( i=0; i<$count; i++ ))
         do
-          if [[ $(echo $comments | jq ".[$i].user.login" | sed 's/"//g') == "mssonicbld" ]];then
+          if [[ $(echo $comments | jq ".[$i].author.login" | sed 's/"//g') == "mssonicbld" ]];then
             origin_pr_url=$(echo $comments | jq ".[$i].body" | sed 's/"//g' | sed 's/Original PR: //')
             break
           fi
