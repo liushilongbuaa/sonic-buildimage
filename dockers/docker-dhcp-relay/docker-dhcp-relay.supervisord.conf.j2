@@ -93,9 +93,9 @@ programs=
 {% if 'dhcp_server' not in DEVICE_METADATA['localhost'] or 'enable' not in DEVICE_METADATA['localhost']['dhcp_server'] %}
 {% include 'dhcpv4-relay.agents.j2' %}
 {% endif %}
-{% include 'dhcpv6-relay.agents.j2' %}
 {% endfor %}
 
+{% include 'dhcpv6-relay.agents.j2' %}
 {% include 'dhcp-relay.monitors.j2' %}
 {% endif %}
 {% endif %}
