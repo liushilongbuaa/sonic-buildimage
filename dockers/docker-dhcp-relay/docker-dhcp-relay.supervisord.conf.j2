@@ -48,7 +48,7 @@ dependent_startup_wait_for=rsyslogd:running
 {% if VLAN and vlan_name in VLAN and 'dhcp_servers' in VLAN[vlan_name] and VLAN[vlan_name]['dhcp_servers']|length > 0 %}
 {% set _dummy = ipv4_num_relays.update({'count': ipv4_num_relays.count + 1}) %}
 {% endif %}
-{% if VLAN and vlan_name in VLAN and 'dhcpv6_servers' in VLAN[vlan_name] and VLAN[vlan_name]['dhcpv6_servers']|length > 0 %}
+{% if DHCP_RELAY and vlan_name in DHCP_RELAY and DHCP_RELAY[vlan_name]['dhcpv6_servers']|length > 0 %}
 {% set _dummy = ipv6_num_relays.update({'count': ipv6_num_relays.count + 1}) %}
 {% endif %}
 {% endfor %}
@@ -93,9 +93,9 @@ programs=
 {% if 'dhcp_server' not in DEVICE_METADATA['localhost'] or 'enable' not in DEVICE_METADATA['localhost']['dhcp_server'] %}
 {% include 'dhcpv4-relay.agents.j2' %}
 {% endif %}
-{% include 'dhcpv6-relay.agents.j2' %}
 {% endfor %}
 
+{% include 'dhcpv6-relay.agents.j2' %}
 {% include 'dhcp-relay.monitors.j2' %}
 {% endif %}
 {% endif %}
