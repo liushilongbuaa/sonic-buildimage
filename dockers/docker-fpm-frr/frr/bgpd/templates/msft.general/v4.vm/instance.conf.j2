@@ -1,6 +1,12 @@
+{% from "common/functions.conf.j2" import get_ipv4_loopback_address %}
+
 !
 ! template: bgpd/templates/msft.general/v4.vm/instance.conf.j2
 !
+
+! It is calling get_ipv4_loopback_address, but the method is generic enough
+! to get IP from an interface in any table
+  bgp router-id {{ get_ipv4_loopback_address(CONFIG_DB__MGMT_INTERFACE, "eth1") | ip }}
   neighbor {{ neighbor_addr }} remote-as {{ bgp_session['asn'] }}
   neighbor {{ neighbor_addr }} description {{ bgp_session['name'] }}
   neighbor {{ neighbor_addr }} ebgp-multihop 255

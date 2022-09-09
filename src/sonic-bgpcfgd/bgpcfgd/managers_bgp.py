@@ -128,6 +128,10 @@ class BGPPeerMgrBase(Manager):
                             or 'use_loopback' not in self.constants['bgp'] \
                             or self.constants['bgp']['use_loopback']
 
+        self.load_mgmt_intf = 'bgp' in self.constants \
+                            and 'load_mgmt_intf' in self.constants['bgp'] \
+                            and self.constants['bgp']['load_mgmt_intf']
+
         if self.use_loopback:
             deps.append(("CONFIG_DB", swsscommon.CFG_LOOPBACK_INTERFACE_TABLE_NAME, "Loopback0"))
 
@@ -208,6 +212,9 @@ class BGPPeerMgrBase(Manager):
 
         if self.use_loopback:
             kwargs['loopback0_ipv4'] = lo0_ipv4
+
+        if self.load_mgmt_intf:
+            kwargs['CONFIG_DB__MGMT_INTERFACE'] = { tuple(key.split('|')) : {} for key in self.directory.get_slot("CONFIG_DB", swsscommon.CFG_MGMT_INTERFACE_TABLE_NAME)
 
         tag = data['name'] if 'name' in data else nbr
         self.peer_group_mgr.update(tag, **kwargs)
