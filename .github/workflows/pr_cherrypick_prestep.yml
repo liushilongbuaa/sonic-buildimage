@@ -9,7 +9,7 @@ on:
 
 jobs:
   pre_cherry_pick:
-    if: github.event.pull_request.merged == true && (github.event.action == "closed")
+    if: github.event.pull_request.merged == true && contains(join(github.event.issue.labels.*.name, ','), 'Approved for 20')
     runs-on: ubuntu-latest
     strategy:
       matrix:
