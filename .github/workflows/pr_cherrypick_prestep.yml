@@ -9,7 +9,7 @@ on:
 
 jobs:
   pre_cherry_pick:
-    if: github.event.pull_request.merged == true && (github.event.action == "closed" || contains(github.event.label.name, "Approved for ${{ matrix.branch }} Branch") )
+    if: github.event.pull_request.merged == true && contains(join(github.event.pull_request.labels.*.name, ','), 'Approved for 20')
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -35,15 +35,13 @@ jobs:
         pr_id=$(echo $GITHUB_CONTEXT | jq -r ".event.number")
         pr_url=$(echo $GITHUB_CONTEXT | jq -r ".event.pull_request._links.html.href")
         repository=$(echo $GITHUB_CONTEXT | jq -r ".repository")
-        labels_count=$(echo $GITHUB_CONTEXT | jq ".event.pull_request.labels | length")
-        labels_json=$(echo $GITHUB_CONTEXT | jq ".event.pull_request.labels")
+        labels_json=$(echo $GITHUB_CONTEXT | jq -r ".event.pull_request.labels[].name")
         echo =============================
         echo SHA:           $sha
         echo PRID:          $pr_id
         echo pr_url:        $pr_url
         echo repository:    $repository
-        echo labels_count:  $labels_count
-        echo labels_json：   $labels_json
+        echo labels_json:   H"$labels_json"H
         echo ${TOKEN} | gh auth login --with-token
         echo =============================
         if [[ "$(echo $GITHUB_CONTEXT | jq -r '.event.action')" == "labeled" ]] && \
@@ -52,10 +50,9 @@ jobs:
           exit 0
         fi
         create_pr=''
-        for (( i=0; i<$labels_count; i++ ))
+        while read label
         do
-          label=$(echo $labels_json | jq -r ".[$i].name")
-          echo label ${i}: $label
+          echo label: $label
           if [[ "$label" == "Approved for ${{ matrix.branch }} Branch" ]];then
             create_pr=1
           fi
@@ -67,7 +64,7 @@ jobs:
             echo "already has tag: Included in ${{ matrix.branch }} Branch, exit"
             exit 0
           fi
-        done
+        done <<< "$labels_json"
         if [[ "$create_pr" != "1" ]];then
           echo "Didn't find 'Approved for ${{ matrix.branch }} Branch' tag."
           exit 0
