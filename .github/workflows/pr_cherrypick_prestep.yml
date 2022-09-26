@@ -41,7 +41,8 @@ jobs:
         echo PRID:          $pr_id
         echo pr_url:        $pr_url
         echo repository:    $repository
-        echo labels_json:   H"$labels_json"H
+        echo labels_json:
+        echo "$labels_json"
         echo ${TOKEN} | gh auth login --with-token
         echo =============================
         if [[ "$(echo $GITHUB_CONTEXT | jq -r '.event.action')" == "labeled" ]] && \
@@ -76,7 +77,7 @@ jobs:
         git clean -xdff
 
         git config user.name mssonicbld
-        git config user.email sonicbuildadmin@microsoft.com
+        git config user.email sonicbld@microsoft.com
 
         git config credential.https://github.com.username mssonicbld
         git remote add mssonicbld https://mssonicbld:${TOKEN}@github.com/mssonicbld/sonic-buildimage
@@ -109,7 +110,7 @@ jobs:
 
           # Add label to new PR
           gh pr edit $new_pr_rul --add-label "automerge"
-          echo Add label Created PR to ${{ matrix.branch }} Branch
+          echo Add label automerge to new PR
           # Add comment to new PR
           gh pr comment $new_pr_rul --body "Original PR: ${pr_url}"
           echo Add comment to new PR
