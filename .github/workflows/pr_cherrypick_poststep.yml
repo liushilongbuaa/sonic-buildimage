@@ -4,12 +4,7 @@ on:
     types:
     - closed
     branches:
-    - 202205
-    - 202111
-    - 202106
-    - 202012
-    - 201911
-    - 201811
+    - '20????'
 
 jobs:
   post_cherry_pick:
