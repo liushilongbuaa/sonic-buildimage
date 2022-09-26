@@ -3,7 +3,7 @@
 This is an introduction about auto-cherry-pick workflow.
 
 
-take 202205 branch for example:
+The workflow only works for release branches, such as 202???,201811,201911. Let's take 202205 branch as an example:
 1. pr_cherrypick_prestep:
 ```mermaid
 graph LR
