@@ -61,12 +61,12 @@ jobs:
 
         cherry_pick(){
           set -e
-          local create_pr=''
           local branch=$1
           if [ -z $branch ];then return 0;fi
           while read label
           do
             echo label: $label
+            local create_pr=''
             if [[ "$label" == "Approved for $branch Branch" ]];then
               create_pr=1
             fi
