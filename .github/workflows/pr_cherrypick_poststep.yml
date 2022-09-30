@@ -42,7 +42,7 @@ jobs:
         echo =============================
         # Add label
         if [[ "$origin_pr_url" == "" ]];then
-          echo original PR didn't found.
+          echo "original PR didn't found."
           exit 1
         fi
         gh pr edit $origin_pr_url --add-label "Included in ${base_ref} Branch"
