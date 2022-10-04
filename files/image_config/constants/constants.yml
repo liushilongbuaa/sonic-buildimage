@@ -31,8 +31,8 @@ constants:
           - "deny 0::/0 le 59"
           - "deny 0::/0 ge 65"
     bbr:
-      enabled: true
-      default_state: "enabled"
+      enabled: false
+      default_state: "disabled"
     peers:
       general: # peer_type
         db_table: "BGP_NEIGHBOR"

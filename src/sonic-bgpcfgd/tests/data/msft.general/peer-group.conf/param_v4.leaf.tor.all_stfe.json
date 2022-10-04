@@ -6,7 +6,7 @@
         }
     },
     "CONFIG_DB__BGP_BBR": {
-        "status": "enabled"
+        "status": "disabled"
     },
     "CONFIG_DB__DEVICE_NEIGHBOR_METADATA": {
         "neig_device": {

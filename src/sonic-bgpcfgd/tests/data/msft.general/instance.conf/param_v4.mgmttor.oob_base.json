@@ -10,7 +10,7 @@
         }
     },
     "CONFIG_DB__BGP_BBR": {
-        "status": "enabled"
+        "status": "disabled"
     },
     "bgp_session": {
         "asn": "11111",
