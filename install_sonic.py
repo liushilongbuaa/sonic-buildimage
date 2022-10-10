@@ -33,6 +33,7 @@ def main():
             time.sleep(1)
 
     # select ONIE embed
+    # add comment
     p.expect(grub_selection)
     p.sendline(KEY_DOWN)
 
