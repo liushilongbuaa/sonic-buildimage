@@ -53,7 +53,7 @@ stages:
     BUILD_NUMBER: $(Build.BuildId)
     PLATFORM_ARCH: amd64
     PASSWORD: $(SONIC_PASSWORD)
-    BUILD_OPTIONS: 'SONIC_BUILD_JOBS=4 ENABLE_DHCP_GRAPH_SERVICE=y SHUTDOWN_BGP_ON_START=y ENABLE_PFCWD_ON_START=y SONIC_DPKG_CACHE_SOURCE=/nfs/dpkg_cache/$(GROUP_NAME)'
+    BUILD_OPTIONS: 'SONIC_BUILD_JOBS=4 ENABLE_DHCP_GRAPH_SERVICE=y SHUTDOWN_BGP_ON_START=y ENABLE_PFCWD_ON_START=y SONIC_DPKG_CACHE_SOURCE=/nfs/dpkg_cache/$(GROUP_NAME) ${{ variables.VERSION_CONTROL_OPTIONS }}'
     VERSION_PATH: target/sonic.version
     DOCKER_DATA_ROOT_FOR_MULTIARCCH: /data/march/docker
     PACKAGE_URL: "https://sonicstorage.blob.core.windows.net/packages"
@@ -97,6 +97,10 @@ stages:
         - publish: $(System.DefaultWorkingDirectory)/target
           artifact: 'sonic-buildimage.$(GROUP_NAME)'
           displayName: "Archive sonic image"
+        - publish: $(System.DefaultWorkingDirectory)/target
+          condition: or(failed(), canceled())
+          artifact: 'sonic-buildimage.$(GROUP_NAME)$(System.JobAttempt)'
+          displayName: "Archive failed sonic image"
         - script: |
             for image in `ls target | grep -E "\.(swi|bin|raw|deb)$"`; do
               version_image=$(echo $image | sed -E "s/(-dbg\.\w+|\.\w+)$/-$(SONIC_VERSION)\1/")
@@ -201,10 +205,15 @@ stages:
       jobGroups:
         - name: vs
           script: |
+            set -ex
             make $BUILD_OPTIONS SONIC_DPKG_CACHE_METHOD=wcache PASSWORD=$PASSWORD target/sonic-vs.bin target/sonic-vs.img.gz
             gzip -kd target/sonic-vs.img.gz
             SONIC_RUN_CMDS="qemu-img convert target/sonic-vs.img -O vhdx -o subformat=dynamic target/sonic-vs.vhdx" make sonic-slave-run
             rm target/sonic-vs.img
+        - name: generic
+          script: |
+            OPTIONS="$BUILD_OPTIONS SONIC_DPKG_CACHE_METHOD=wcache PASSWORD=$PASSWORD"
+            make $OPTIONS target/sonic-generic.bin
         - name: broadcom
           timeoutInMinutes: 1440
           script: |
@@ -264,10 +273,11 @@ stages:
             mv target/release/* target/
         - name: barefoot
           script: |
+            set -ex
             sudo modprobe overlay
             OPTIONS="$BUILD_OPTIONS ENABLE_NAT=n INCLUDE_RESTAPI=y PASSWORD=$PASSWORD"
-            make $OPTIONS ENABLE_RESTAPI=y target/docker-syncd-bfn-rpc.gz
-            make $OPTIONS target/sonic-aboot-barefoot.swi
+            make $OPTIONS ENABLE_SYNCD_RPC=y target/docker-syncd-bfn-rpc.gz
+            make $OPTIONS target/sonic-barefoot.bin target/sonic-aboot-barefoot.swi
         - name: marvell-armhf
           pool: sonic-armhf
           timeoutInMinutes: 2160
