@@ -1,0 +1,16 @@
+#!/bin/bash
+
+. /usr/local/share/buildinfo/scripts/buildinfo_base.sh
+REAL_COMMAND=$(get_command go)
+
+log_file=$BUILD_VERSION_PATH/versions-go.log
+
+echo $* >> $log_file
+if [[ "$1" == 'get' ]];then
+	echo match >> $log_file
+	run_with_retry $REAL_COMMAND "$@"
+else
+	echo Not match >> $log_file
+	$REAL_COMMAND "$@"
+fi
+exit

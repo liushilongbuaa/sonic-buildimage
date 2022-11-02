@@ -13,6 +13,8 @@ WEB_VERSION_FILE=$VERSION_PATH/versions-web
 BUILD_WEB_VERSION_FILE=$BUILD_VERSION_PATH/versions-web
 REPR_MIRROR_URL_PATTERN='http:\/\/packages.trafficmanager.net\/debian'
 DPKG_INSTALLTION_LOCK_FILE=/tmp/.dpkg_installation.lock
+WAIT_IN_SECOND=10
+WAIT_COUNT=60
 
 . $BUILDINFO_PATH/config/buildinfo.config
 
@@ -132,7 +134,7 @@ download_packages()
         fi
     done
 
-    $REAL_COMMAND "${parameters[@]}"
+    run_with_retry $REAL_COMMAND "${parameters[@]}"
     local result=$?
 
     for filename in "${!filenames[@]}"
@@ -236,22 +238,20 @@ check_apt_version()
 acquire_apt_installation_lock()
 {
     local result=n
-    local wait_in_second=10
-    local count=60
     local info="$1"
-    for ((i=1; i<=$count; i++)); do
+    for ((i=1; i<=$WAIT_COUNT; i++)); do
         if [ -f $DPKG_INSTALLTION_LOCK_FILE ]; then
             local lock_info=$(cat $DPKG_INSTALLTION_LOCK_FILE || true)
-            echo "Waiting dpkg lock for $wait_in_second, $i/$count, info: $lock_info" 1>&2
-            sleep $wait_in_second
+            echo "Waiting dpkg lock for $WAIT_IN_SECOND, $i/$WAIT_COUNT, info: $lock_info" 1>&2
+            sleep $WAIT_IN_SECOND
         else
             # Create file in an atomic operation
             if (set -o noclobber; echo "$info">$DPKG_INSTALLTION_LOCK_FILE) &>/dev/null; then
                 result=y
                 break
             else
-                echo "Failed to creat lock, Waiting dpkg lock for $wait_in_second, $i/$count, info: $lock_info" 1>&2
-                sleep $wait_in_second
+                echo "Failed to creat lock, Waiting dpkg lock for $WAIT_IN_SECOND, $i/$WAIT_COUNT, info: $lock_info" 1>&2
+                sleep $WAIT_IN_SECOND
             fi
         fi
     done
@@ -315,6 +315,19 @@ update_version_files()
     for version_name in $version_names; do
         update_version_file $version_name
     done
+}
+
+run_with_retry(){
+    [[ "$@" == "" ]] && { echo "run_with_retry: input command can't be empty." 1>&2;exit 1; }
+    if [[ "$NETWORK_RETRY" == "y" ]];then
+        for ((i=0; i<=$WAIT_COUNT; i++))
+        do
+            [[ $i != 0 ]] && { echo "Waiting $WAIT_IN_SECOND to run again, $i/$WAIT_COUNT, command: $@" 1>&2; sleep $WAIT_IN_SECOND; }
+            "$@" && return 0
+        done
+    else
+        $@
+    fi
 }
 
 ENABLE_VERSION_CONTROL_DEB=$(check_version_control "deb")

@@ -15,7 +15,7 @@ COMMAND_INFO="Locked by command: $REAL_COMMAND $@"
 if [ "$INSTALL" == y ]; then
     check_apt_version "$@"
     lock_result=$(acquire_apt_installation_lock "$COMMAND_INFO" )
-    $REAL_COMMAND "$@"
+    run_with_retry $REAL_COMMAND "$@"
     command_result=$?
     [ "$lock_result" == y ] && release_apt_installation_lock
     exit $command_result
@@ -25,6 +25,6 @@ else
       dpkg-query -W -f '${Package}==${Version}\n' >> $POST_VERSION_PATH/purge-versions-deb
       chmod a+wr $POST_VERSION_PATH/purge-versions-deb
     fi
-    $REAL_COMMAND "$@"
+    run_with_retry $REAL_COMMAND "$@"
 fi
 
