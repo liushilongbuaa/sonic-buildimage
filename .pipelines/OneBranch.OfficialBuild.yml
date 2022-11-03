@@ -206,19 +206,19 @@ stages:
         - name: vs
           script: |
             set -ex
-            make $BUILD_OPTIONS SONIC_DPKG_CACHE_METHOD=wcache PASSWORD=$PASSWORD target/sonic-vs.bin target/sonic-vs.img.gz
+            make $(BUILD_OPTIONS) SONIC_DPKG_CACHE_METHOD=wcache PASSWORD=$PASSWORD target/sonic-vs.bin target/sonic-vs.img.gz
             gzip -kd target/sonic-vs.img.gz
             SONIC_RUN_CMDS="qemu-img convert target/sonic-vs.img -O vhdx -o subformat=dynamic target/sonic-vs.vhdx" make sonic-slave-run
             rm target/sonic-vs.img
         - name: generic
           script: |
-            OPTIONS="$BUILD_OPTIONS SONIC_DPKG_CACHE_METHOD=wcache PASSWORD=$PASSWORD"
+            OPTIONS="$(BUILD_OPTIONS) SONIC_DPKG_CACHE_METHOD=wcache PASSWORD=$PASSWORD"
             make $OPTIONS target/sonic-generic.bin
         - name: broadcom
           timeoutInMinutes: 1440
           script: |
             set -ex
-            OPTIONS="$BUILD_OPTIONS SONIC_DPKG_CACHE_METHOD=wcache PASSWORD=$PASSWORD"
+            OPTIONS="$(BUILD_OPTIONS) SONIC_DPKG_CACHE_METHOD=wcache PASSWORD=$PASSWORD"
 
             echo "==== Building slim images"
             echo "INCLUDE_MUX = n" >> rules/config.user
@@ -262,7 +262,7 @@ stages:
             mv target/release/* target/
         - name: mellanox
           script: |
-            OPTIONS="$BUILD_OPTIONS SONIC_DPKG_CACHE_METHOD=wcache INCLUDE_RESTAPI=y INCLUDE_VNET_MONITOR=y PASSWORD=$PASSWORD"
+            OPTIONS="$(BUILD_OPTIONS) SONIC_DPKG_CACHE_METHOD=wcache INCLUDE_RESTAPI=y INCLUDE_VNET_MONITOR=y PASSWORD=$PASSWORD"
             make $OPTIONS INCLUDE_NAT=n INCLUDE_RESTAPI=y INCLUDE_VNET_MONITOR=y target/sonic-mellanox.bin
             make $OPTIONS INCLUDE_NAT=n ENABLE_SYNCD_RPC=y INCLUDE_RESTAPI=y INCLUDE_VNET_MONITOR=y target/docker-syncd-mlnx-rpc.gz || true
             mv target/sonic-mellanox.bin target/release/
@@ -275,7 +275,7 @@ stages:
           script: |
             set -ex
             sudo modprobe overlay
-            OPTIONS="$BUILD_OPTIONS ENABLE_NAT=n INCLUDE_RESTAPI=y PASSWORD=$PASSWORD"
+            OPTIONS="$(BUILD_OPTIONS) ENABLE_NAT=n INCLUDE_RESTAPI=y PASSWORD=$PASSWORD"
             make $OPTIONS ENABLE_SYNCD_RPC=y target/docker-syncd-bfn-rpc.gz
             make $OPTIONS target/sonic-barefoot.bin target/sonic-aboot-barefoot.swi
         - name: marvell-armhf
@@ -285,7 +285,7 @@ stages:
             PLATFORM_ARCH: armhf
           script: |
             echo "INCLUDE_SFLOW = y" > rules/config.user
-            OPTIONS="$BUILD_OPTIONS PASSWORD=$PASSWORD"
+            OPTIONS="$(BUILD_OPTIONS) PASSWORD=$PASSWORD"
             make $OPTIONS target/sonic-marvell-armhf.bin
         - name: cisco-8000
           variables:
@@ -341,7 +341,7 @@ stages:
             displayName: "Override cisco sai packages"
           - script: |
               set -ex
-              OPTIONS="$BUILD_OPTIONS ENABLE_NAT=n INCLUDE_RESTAPI=y PASSWORD=$PASSWORD"
+              OPTIONS="$(BUILD_OPTIONS) ENABLE_NAT=n INCLUDE_RESTAPI=y PASSWORD=$PASSWORD"
               make $OPTIONS target/sonic-cisco-8000.bin
               make $OPTIONS ENABLE_SYNCD_RPC=y target/docker-syncd-cisco-rpc.gz
             env:
