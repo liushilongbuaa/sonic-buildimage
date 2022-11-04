@@ -1,16 +1,17 @@
 #!/bin/bash
 
 . /usr/local/share/buildinfo/scripts/buildinfo_base.sh
-REAL_COMMAND=$(get_command go)
 
 log_file=$BUILD_VERSION_PATH/versions-go.log
+[ -d /sonic/target ] && log_file=/sonic/target/versions/default/versions-go.log
+REAL_COMMAND=$(get_command go $log_file)
+[ -z "$REAL_COMMAND" ] && REAL_COMMAND=/usr/local/go/bin/go
 
-echo $* >> $log_file
 if [[ "$1" == 'get' ]];then
-	echo match >> $log_file
+	echo With retry: $REAL_COMMAND $@ >> $log_file
 	run_with_retry $REAL_COMMAND "$@"
 else
-	echo Not match >> $log_file
+	echo Not  retry: $REAL_COMMAND $@ >> $log_file
 	$REAL_COMMAND "$@"
 fi
 exit
