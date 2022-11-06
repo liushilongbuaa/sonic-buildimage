@@ -4,7 +4,7 @@
 
 log_file=$BUILD_VERSION_PATH/versions-go.log
 [ -d /sonic/target ] && log_file=/sonic/target/versions/default/versions-go.log
-REAL_COMMAND=$(get_command go $log_file)
+REAL_COMMAND=$(get_command go)
 [ -z "$REAL_COMMAND" ] && REAL_COMMAND=/usr/local/go/bin/go
 
 if [[ "$1" == 'get' ]];then
