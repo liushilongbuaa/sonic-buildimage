@@ -1,5 +1,0 @@
-#!/bin/bash
-
-. /usr/local/share/buildinfo/scripts/buildinfo_base.sh
-REAL_COMMAND=$(get_command dpkg)
-run_with_retry $REAL_COMMAND "$@"
