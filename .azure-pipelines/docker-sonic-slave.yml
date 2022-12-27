@@ -7,9 +7,9 @@ resources:
   repositories:
   - repository: buildimage
     type: github
-    name: sonic-net/sonic-buildimage
+    name: liushilongbuaa/sonic-buildimage
     ref: master
-    endpoint: sonic-net
+    endpoint: liushilongbuaa
 
 schedules:
 - cron: "0 0 * * 0"
