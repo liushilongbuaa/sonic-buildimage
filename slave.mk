@@ -567,10 +567,11 @@ $(SONIC_INSTALL_DEBS) : $(DEBS_PATH)/%-install : .platform $$(addsuffix -install
 		# put a lock here because dpkg does not allow installing packages in parallel
 		if mkdir $(DEBS_PATH)/dpkg_lock &> /dev/null; then
 			echo ============================================================================================
-			echo PATH: $$PATH
+			sudo echo PATH: $$PATH
 			which dpkg
+			PATH=/usr/local/sbin:$$PATH which dpkg
 			ls -al /usr/local/sbin && dpkg -s sonic-build-hooks
-			{ sudo DEBIAN_FRONTEND=noninteractive dpkg -i $(DEBS_PATH)/$* $(LOG) && rm -d $(DEBS_PATH)/dpkg_lock && break; } || { rm -d $(DEBS_PATH)/dpkg_lock && sudo lsof /var/lib/dpkg/lock-frontend && ps aux && exit 1 ; }
+			{ sudo PATH=/usr/local/sbin:$$PATH DEBIAN_FRONTEND=noninteractive dpkg -i $(DEBS_PATH)/$* $(LOG) && rm -d $(DEBS_PATH)/dpkg_lock && break; } || { rm -d $(DEBS_PATH)/dpkg_lock && sudo lsof /var/lib/dpkg/lock-frontend && ps aux && exit 1 ; }
 		fi
 		sleep 10
 	done
