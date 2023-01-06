@@ -2,11 +2,11 @@ azure-common==1.1.28
 azure-nspkg==3.0.2
 azure-storage==0.36.0
 bitarray==1.5.3
-certifi==2022.9.24
+certifi==2022.12.7
 cffi==1.15.1
 charset-normalizer==2.1.1
 click==7.0
-cryptography==38.0.3
+cryptography==39.0.0
 docker==4.3.1
 idna==3.4
 ijson==2.6.1
