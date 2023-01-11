@@ -1,0 +1,14 @@
+diff --git a/setup.py b/setup.py
+index 9ed9e10..b752cd8 100644
+--- a/setup.py
++++ b/setup.py
+@@ -38,7 +38,8 @@ setup(
+         'pytest',
+         'pyfakefs',
+         'sonic-py-common',
+-        'deepdiff'
++        # there is something wrong with latest deepdiff(6.2.3)
++        'deepdiff==6.2.2'
+     ],
+     classifiers = [
+         'Development Status :: 3 - Alpha',
