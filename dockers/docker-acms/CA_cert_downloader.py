@@ -32,12 +32,12 @@ def copy_cert(source, destination_dir):
             # Delete existing file before copying latest one
             os.remove(destination)
             sonic_logger.log_info("CA_cert_downloader: copy_cert: Existing Root Cert file removed")
-        shutil.copyfile(source, destination)
-        if os.path.exists(destination):
-            return True
-        else:
-            sonic_logger.log_error("CA_cert_downloader: copy_cert: "+stderr)
+        try:
+            shutil.copyfile(source, destination)
+        except OSError as e:
+            sonic_logger.log_error("CA_cert_downloader: copy_cert: Failed to copy to the destination: " + str(e))
             return False
+        return True
     else:
         sonic_logger.log_error("CA_cert_downloader: copy_cert: File does not exist")
         return False
@@ -70,7 +70,7 @@ def get_cert(ca, url):
                 sonic_logger.log_error("CA_cert_downloader: get_cert: GET request failed!")
         except Exception as e:
             sonic_logger.log_error("CA_cert_downloader: get_cert: Unable to reach "+url)
-            sonic_logger.log_error("CA_cert_downloader: get_cert: "+str(e.reason))
+            sonic_logger.log_error("CA_cert_downloader: get_cert: "+str(e))
             # Retry every 5 min
             sonic_logger.log_error("CA_cert_downloader: get_cert: Retrying in 5min!")
             time.sleep(60 * 5)
