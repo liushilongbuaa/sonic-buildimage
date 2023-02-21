@@ -18,7 +18,7 @@ RUN apt-get update &&       \
         libxml2             \
         python-dev
 
-RUN apt-get install -y -t buster-backports curl
+RUN apt-get install -y -t buster-backports curl=7.74
 
 RUN pip install wheel
 
