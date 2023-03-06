@@ -38,10 +38,13 @@ jobs:
             check=$(echo $checks | jq ".[$j]")
             state=$(echo $check | jq -r '.state')
             conclusion=$(echo $check | jq -r '.conclusion')
+            name=$(echo check | jq -r '.name')
 
             # EasyCLA success flag:  state=SUCCESS
             # Others success flag:   conclusion in SUCCESS,NEUTRAL
-            if [[ "$state" == "SUCCESS" ]];then
+            if echo $name | grep -v Azure.sonic-buildimage;then
+              continue
+            elif [[ "$state" == "SUCCESS" ]];then
               # check pass
               continue
             elif [[ "$conclusion" == "SUCCESS" ]] || [[ "$conclusion" == "NEUTRAL" ]];then
