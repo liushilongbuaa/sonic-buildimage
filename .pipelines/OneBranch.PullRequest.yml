@@ -103,18 +103,3 @@ stages:
         MIN_WORKER: $(T0_2VLANS_INSTANCE_NUM)
         MAX_WORKER: $(T0_2VLANS_INSTANCE_NUM)
         DEPLOY_MG_EXTRA_PARAMS: "-e vlan_config=two_vlan_a"
-
-  - job: dualtor_testbedv2
-    pool:
-      vmImage: 'ubuntu-20.04'
-    displayName: "kvmtest-dualtor-t0 by TestbedV2"
-    timeoutInMinutes: 240
-    condition: and(succeeded(), eq(variables.BUILD_IMG_RUN_TESTBEDV2_TEST, 'YES'))
-    continueOnError: false
-    steps:
-      - template: ../.azure-pipelines/run-test-scheduler-template.yml
-        parameters:
-          TOPOLOGY: dualtor
-          MIN_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
-          MAX_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
-          COMMON_EXTRA_PARAMS: "--disable_loganalyzer "
