@@ -27,7 +27,8 @@ RUN apt-get update &&   \
         i2c-tools       \
         psmisc          \
         python3-jsonschema \
-        libpci3
+        libpci3         \
+        pciutils
 
 # On Arista devices, the sonic_platform wheel is not installed in the container.
 # Instead, the installation directory is mounted from the host OS. However, this method
@@ -42,6 +43,10 @@ RUN pip2 install enum34
 # Barefoot platform vendors' sonic_platform packages import the Python 'thrift' library
 RUN pip2 install thrift==0.13.0
 RUN pip3 install thrift==0.13.0
+
+# We install the libpci module in order to be able to do PCI transactions
+RUN pip2 install libpci
+RUN pip3 install libpci
 
 {% if docker_platform_monitor_debs.strip() -%}
 # Copy locally-built Debian package dependencies

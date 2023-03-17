@@ -1,3 +1,17 @@
+https://github.com/CESNET/libyang.git==d57c8888922d1663508ad0f0a5b66f8ad600276d
+https://github.com/daveolson53/libnss-tacplus.git==19008ab68d9d504aa58eb34d5f564755a1613b8b
+https://github.com/jeroennijhof/pam_tacplus.git==7908a7faa0205beda9ea198bdd3aa37868be6da2
+https://github.com/jpirko/libteam.git==61e27812c1074a865d7e1a778c0ce442837c28d7
+https://github.com/Mellanox/libpsample.git==62bb27d9a49424e45191eee81df7ce0d8c74e774
+https://github.com/sflow/host-sflow==f1ffaa93b5ef2221ca7299e6db953917fba03b40
+https://github.com/sflow/sflowtool==8c914e79ecb7930adcba2e5296041c3f9eb8e450
+https://github.com/thom311/libnl==cbafad9ddf24caef5230fef715d34f0539603be0
+https://salsa.debian.org/debian/libteam.git==48142125234a665ad5367b724af36a58fb484d3d
+https://salsa.debian.org/dhcp-team/isc-dhcp.git==7a6f5a9d178439a56a8eb0cd4446329a8d5631ce
+https://salsa.debian.org/kernel-team/ethtool/==68409b09a969b49a07fbf3930409f155b953434b
+https://salsa.debian.org/kernel-team/initramfs-tools.git==40e544e13611c1b2690eb99a8096fc16c1b9c74e
+https://salsa.debian.org/sk-guest/monit.git==c9da7ebb1f35dfba17b50b5969a6e75e29cbec0d
+https://salsa.debian.org/ssh-team/openssh.git==48770216530d8a0a57f5f1d7cc60addd67d1b549xumia@xumia-vm1:/projects/sonic/sonic-buildimage$ cat files/build/versions/default/versions-docker; echo
 amd64:amd64/debian:buster==sha256:c75d609d1d06a44ac87c52e9afe4102af856dd1c075f316b4d219f072af0b3b1
 amd64:amd64/debian:stretch==sha256:16ee3e11da473f6565ef94a715f1a38b3079e0664913be78869c336a71cb6085
 amd64:debian:buster==sha256:2d356e1e22c0902f88ef65cb7159ecd5a96feb62345747edfd4324b0d83a2923
