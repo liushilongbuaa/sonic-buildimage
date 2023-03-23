@@ -136,7 +136,7 @@ Index: sonic-utilities/scripts/fast-reboot
  
  function load_kernel() {
      # Load kernel into the memory
--    /sbin/kexec -l "$KERNEL_IMAGE" --initrd="$INITRD" --append="$BOOT_OPTIONS"
+-    /sbin/kexec -a -l "$KERNEL_IMAGE" --initrd="$INITRD" --append="$BOOT_OPTIONS"
 +    $KEXEC_PRG -l "$KERNEL_IMAGE" --initrd="$INITRD" --append="$BOOT_OPTIONS"
  }
  
