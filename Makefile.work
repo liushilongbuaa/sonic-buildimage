@@ -275,6 +275,7 @@ SONIC_BUILD_INSTRUCTION :=  make \
                            SONIC_INCLUDE_RESTAPI=$(INCLUDE_RESTAPI) \
                            SONIC_INCLUDE_ACMS=$(INCLUDE_ACMS) \
                            SONIC_INCLUDE_MUX=$(INCLUDE_MUX) \
+						   SONIC_INCLUDE_VNET_MONITOR=$(INCLUDE_VNET_MONITOR) \
                            TELEMETRY_WRITABLE=$(TELEMETRY_WRITABLE) \
                            EXTRA_DOCKER_TARGETS=$(EXTRA_DOCKER_TARGETS) \
                            BUILD_LOG_TIMESTAMP=$(BUILD_LOG_TIMESTAMP) \
