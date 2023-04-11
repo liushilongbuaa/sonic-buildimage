@@ -105,7 +105,10 @@ class TestPingStatusCache(object):
                 "seq_num": 1,
                 "timeout_count": 0,
                 "state": "up",
-                "ping_state": PING_INITIAL # The ping_state is reset to initial after updating sn
+                "ping_state": PING_INITIAL, # The ping_state is reset to initial after updating sn
+                "interval": INTERVAL,
+                "multiplier": MULTIPLIER,
+                "overlay_mac": OVERLAY_MAC
             }
             # Verify the cached status is as expected
             assert(self.cache.stats[cache_key] == expected_values)
@@ -131,7 +134,10 @@ class TestPingStatusCache(object):
                 "seq_num": seq_num+1,
                 "timeout_count": 0,
                 "state": "up",
-                "ping_state": PING_INITIAL
+                "ping_state": PING_INITIAL,
+                "interval": INTERVAL,
+                "multiplier": MULTIPLIER,
+                "overlay_mac": OVERLAY_MAC
             }
             assert(self.cache.stats[cache_key] == expected_values)
             # The 1st timeout
@@ -184,7 +190,7 @@ def create_task_ping(interval=INTERVAL):
                         t1_mac=T1_MAC,
                         t1_loopback=T1_LOOPBACK_V4,
                         t0_loopback=T0_LOOPBACK,
-                        special_mac=FILTER_MAC,
+                        overlay_mac=FILTER_MAC,
                         card_vip=VIP_V4,
                         vni=VNI,
                         interval_ms=interval,
@@ -311,21 +317,21 @@ class TestDBMonitor(object):
         assert(called_args.t1_mac == T1_MAC)
         assert(called_args.t1_loopback == T1_LOOPBACK_V4)
         assert(called_args.t0_loopback == T0_LOOPBACK)
-        assert(called_args.special_mac == FILTER_MAC)
+        assert(called_args.overlay_mac == FILTER_MAC)
         assert(called_args.card_vip == VIP_V4)
         assert(called_args.vni == VNI)
         assert(called_args.interval_ms == INTERVAL)
         assert(called_args.seq_num == 0)
         # Update existing entry
         TMP_MAC = "AA:BB:CC:DD:EE:FF"
-        fvp["overlay_mac"] = TMP_MAC
+        fvp["overlay_dmac"] = TMP_MAC
         db_monitor.process_new_entry(key, "SET", fvp)
-        db_monitor.cached_stats.add_entry.assert_called_with(T0_LOOPBACK, VIP_V4, INTERVAL, MULTIPLIER, FILTER_MAC)
+        db_monitor.cached_stats.add_entry.assert_called_with(T0_LOOPBACK, VIP_V4, INTERVAL, MULTIPLIER, TMP_MAC)
         called_args = db_monitor.task_runner.add_task.call_args[0][0]
         assert(called_args.t1_mac == T1_MAC)
         assert(called_args.t1_loopback == T1_LOOPBACK_V4)
         assert(called_args.t0_loopback == T0_LOOPBACK)
-        assert(called_args.special_mac == TMP_MAC)
+        assert(called_args.overlay_mac == TMP_MAC)
         assert(called_args.card_vip == VIP_V4)
         assert(called_args.vni == VNI)
         assert(called_args.interval_ms == INTERVAL)
@@ -335,13 +341,14 @@ class TestDBMonitor(object):
         db_monitor.cached_stats.remove_entry.assert_called_with(T0_LOOPBACK, VIP_V4)
         # IPV6
         key = T0_LOOPBACK + ":" + VIP_V6
+        fvp["overlay_dmac"] = FILTER_MAC
         db_monitor.process_new_entry(key, "SET", fvp)
-        db_monitor.cached_stats.add_entry.assert_called_with(T0_LOOPBACK, VIP_V6, INTERVAL, MULTIPLIER, OVERLAY_MAC)
+        db_monitor.cached_stats.add_entry.assert_called_with(T0_LOOPBACK, VIP_V6, INTERVAL, MULTIPLIER, FILTER_MAC)
         called_args = db_monitor.task_runner.add_task.call_args[0][0]
         assert(called_args.t1_mac == T1_MAC)
         assert(called_args.t1_loopback == T1_LOOPBACK_V6)
         assert(called_args.t0_loopback == T0_LOOPBACK)
-        assert(called_args.special_mac == FILTER_MAC)
+        assert(called_args.overlay_mac == FILTER_MAC)
         assert(called_args.card_vip == VIP_V6)
         assert(called_args.vni == VNI)
         assert(called_args.interval_ms == INTERVAL)
