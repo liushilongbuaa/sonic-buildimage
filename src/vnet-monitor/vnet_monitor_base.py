@@ -379,9 +379,14 @@ class TaskPing(TaskBase):
         """
         Build a vxlan encapsulated template packet for later use.
         A payload will be added to the template to generate a final packet.
-        +------+------+------+-----------+------+-------+------+-------+------------+--------+-----+-------+
-        |T1 lo |T0 lo |Vxlan1|Special MAC|T1 MAC| T1 lo | VIP  |Vxlan2 |Special MAC | T1 MAC | VIP | T1 Lo |
-        +------+------+------+-----------+--------------+------+------_+------------+--------+-----+-------+
+        The template is as below:
+        +------+------+------+-------------------+------+-------+------+-------+------------+--------+-----+-------+
+        |T1 lo |T0 lo |Vxlan1|'00:12:34:56:78:9a'|T1 MAC| T1 lo | VIP  |Vxlan2 |Special MAC | T1 MAC | VIP | T1 Lo |
+        +------+------+------+-------------------+--------------+------+------_+------------+--------+-----+-------+
+        Notes:
+            1. The dst_mac after the 1st vxlan header is a fixed value '00:12:34:56:78:9a', otherwise the packet is dropped by T0
+            2. The src_mac after the 2nd vxlan must be the special_mac. The card is reading the src_mac and do the matching
+            3. The dst_mac after the 2nd vxlan header can be any value. The card will rewrite it. We use the MAC of T1 here
         Args:
             t1_mac: MAC address of this T1
             t1_loopback: The loopback address (IPV4) of this T1
@@ -392,14 +397,15 @@ class TaskPing(TaskBase):
             packet tempalte
         Raises:
         """
+        T0_MAC = "00:12:34:56:78:9a"
         if ip_interface(card_vip).version == 4:
             # The VIP of card is IPv4
-            inner_pkt = Ether(dst=overlay_mac, src=t1_mac)/IP(src=card_vip, dst=t1_loopback, tos=(DEFAULT_DSCP << 2))/UDP(sport=DEFAULT_UDP_PORT, dport=DEFAULT_UDP_PORT)
-            vxlan2_pkt = Ether(dst=overlay_mac, src=t1_mac)/IP(src=t1_loopback, dst=card_vip, ttl=2, tos=(DEFAULT_DSCP << 2))/UDP()/VXLAN(vni=vni)/inner_pkt
+            inner_pkt = Ether(dst=t1_mac, src=overlay_mac)/IP(src=card_vip, dst=t1_loopback, tos=(DEFAULT_DSCP << 2))/UDP(sport=DEFAULT_UDP_PORT, dport=DEFAULT_UDP_PORT)
+            vxlan2_pkt = Ether(dst=T0_MAC, src=t1_mac)/IP(src=t1_loopback, dst=card_vip, ttl=2, tos=(DEFAULT_DSCP << 2))/UDP()/VXLAN(vni=vni)/inner_pkt
         else:
             # The VIP of card is IPv6
-            inner_pkt = Ether(dst=overlay_mac, src=t1_mac)/IPv6(src=card_vip, dst=t1_loopback, tc=(DEFAULT_DSCP << 2))/UDP(sport=DEFAULT_UDP_PORT, dport=DEFAULT_UDP_PORT)
-            vxlan2_pkt = Ether(dst=overlay_mac, src=t1_mac)/IPv6(src=t1_loopback, dst=card_vip, hlim=2, tc=(DEFAULT_DSCP << 2))/UDP()/VXLAN(vni=vni)/inner_pkt
+            inner_pkt = Ether(dst=t1_mac, src=overlay_mac)/IPv6(src=card_vip, dst=t1_loopback, tc=(DEFAULT_DSCP << 2))/UDP(sport=DEFAULT_UDP_PORT, dport=DEFAULT_UDP_PORT)
+            vxlan2_pkt = Ether(dst=T0_MAC, src=t1_mac)/IPv6(src=t1_loopback, dst=card_vip, hlim=2, tc=(DEFAULT_DSCP << 2))/UDP()/VXLAN(vni=vni)/inner_pkt
 
         vxlan1_pkt = VXLAN(vni=vni)/vxlan2_pkt
 
@@ -408,9 +414,9 @@ class TaskPing(TaskBase):
     def build_vnet_ping_packet(self):
         """
         Build a double vxlan encapsulated packet
-            +------+------+------+-----------+------+------+------+-------+------------+--------+-----+-------+-------+---------+
-            |T1 lo |T0 lo |Vxlan1|Special MAC|T1 MAC|T1 lo | VIP  |Vxlan2 |Special MAC | T1 MAC | VIP | T1 Lo | T0 Lo | Seq No. |
-            +------+------+------+-----------+------+------+------+------_+------------+--------+-----+-------+-------+---------+
+           +------+------+------+-------------------+------+-------+------+-------+------------+--------+-----+-------+-------+---------+
+            |T1 lo |T0 lo |Vxlan1|'00:12:34:56:78:9a'|T1 MAC| T1 lo | VIP  |Vxlan2 |Special MAC | T1 MAC | VIP | T1 Lo | T0 Lo | Seq No. |
+            +------+------+------+-------------------+--------------+------+------_+------------+--------+-----+-------+-------+---------+
         Returns:
             The vnet ping packet
         Raises:
@@ -593,6 +599,9 @@ class DBMonitor():
             multiplier = int(fvp.get("multiplier", DEFAULT_MULTIPLIER))
             overlay_mac = fvp.get("overlay_dmac")
             if self.cached_stats.has_entry(t0_loopback, card_vip):
+                if self.cached_stats.compare_entry(t0_loopback, card_vip, interval, multiplier, overlay_mac):
+                    # The entry is already in the cache, and the new entry is the same as the cached one
+                    return
                 logger_helper.log_notice("Update existing vnet ping task T0 Loopback: {} VIP: {}".format(t0_loopback, card_vip))
 
             logger_helper.log_notice("Got new vnet ping task T0 Loopback: {} VIP: {}".format(t0_loopback, card_vip))
