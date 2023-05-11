@@ -291,6 +291,8 @@ class TestDBMonitor(object):
     def create_db_monitor(self):
         task_runner = mock.MagicMock()
         state_cache = mock.MagicMock()
+        # Return False to simulate the entry is not in the cache
+        state_cache.has_entry.return_value = False
         vnet_monitor_base.swsscommon = mock.MagicMock()
         vnet_monitor_base.daemon_base = mock.MagicMock()
         db_monitor = DBMonitor(
