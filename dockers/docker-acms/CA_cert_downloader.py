@@ -8,11 +8,19 @@ import os, re, shutil, time
 import urllib, urllib2
 import json
 from sonic_py_common import logger
+import dSMS_config_modifier
 
-CERTIFICATE_AUTHORITY = "ame"
-API_URL = "https://ussouth-dsms.dsms.core.windows.net/dsms/issuercertificates?getissuersv3"
 ROOT_CERT = "/acms/AME_ROOT_CERTIFICATE.pem"
 CERTS_PATH = "/etc/sonic/credentials/"
+# ACMS config file
+acms_conf = "/var/opt/msft/client/acms_secrets.ini"
+url_path_dict = {
+    "public": "/dsms/issuercertificates?getissuersv3&caname=ame",
+    "fairfax": "/dsms/issuercertificates?getissuersv3&caname=ame",
+    "mooncake": "/dsms/issuercertificates?getissuersv3&caname=ame",
+    "usnat": "/dsms/issuercertificates?getissuersv3&caname=ame",
+    "ussec": "/dsms/issuercertificates?getissuersv3&caname=ame"
+}
 
 sonic_logger = logger.Logger()
 
@@ -53,10 +61,9 @@ def extract_cert(response):
     root_cert.write(root['PEM']+"\n")
     root_cert.close() 
 
-def get_cert(ca, url):
+def get_cert(url):
+    sonic_logger.log_info("CA_cert_downloader: get_cert: " + url)
     # Call API and get response
-    payload = {'caname': ca}
-    url = url+"&"+urllib.urlencode(payload)
     req = urllib2.Request(url)
     while True:
         try:
@@ -75,10 +82,36 @@ def get_cert(ca, url):
             sonic_logger.log_error("CA_cert_downloader: get_cert: Retrying in 5min!")
             time.sleep(60 * 5)
 
+def get_url(conf_file):
+    try:
+        with open(conf_file, "r") as conf_file_t:
+            for line in conf_file_t:
+                if "FullHttpsDsmsUrl" in line:
+                    res = line.split("=")
+                    if len(res) != 2:
+                        return ""
+                    return res[1].strip()
+        return ""
+    except Exception as e:
+        sonic_logger.log_error("CA_cert_downloader: Unable to get url " + str(e))
+        return ""
 
 def main():
     while True:
-        if get_cert(CERTIFICATE_AUTHORITY, API_URL):
+        url = get_url(acms_conf)
+        sonic_logger.log_info("CA_cert_downloader: main: url is "+url)
+        # Check if dSMS URL is available
+        if "https://" in url and "region-dsms" not in url:
+            break
+        # Poll url every 1 min
+        time.sleep(60)
+
+    cloud = dSMS_config_modifier.get_device_cloudtype()
+    cloud_type = cloud.lower()
+    url_path = url_path_dict.get(cloud_type, "/dsms/issuercertificates?getissuersv3&caname=ame")
+
+    while True:
+        if get_cert(url+url_path):
             sonic_logger.log_info("CA_cert_downloader: main: Cert extraction completed")
             if copy_cert(ROOT_CERT, CERTS_PATH) == False:
                 sonic_logger.log_error("CA_cert_downloader: main: Root cert move to "+CERTS_PATH+" failed!")
