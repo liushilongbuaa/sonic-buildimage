@@ -108,7 +108,7 @@ def main():
 
     cloud = dSMS_config_modifier.get_device_cloudtype()
     cloud_type = cloud.lower()
-    url_path = url_path_dict.get(cloud_type, "/dsms/issuercertificates?getissuersv3&caname=ame")
+    url_path = url_path_dict.get(cloud_type, url_path_dict["public"])
 
     while True:
         if get_cert(url+url_path):
