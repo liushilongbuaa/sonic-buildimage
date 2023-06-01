@@ -102,7 +102,7 @@ def get_url(conf_file):
         sonic_logger.log_error("CA_cert_downloader: Unable to get url " + str(e))
         return ""
 
-def uri_validator(url):
+def url_validator(url):
     try:
         result = urlparse(url)
         return all([result.scheme, result.netloc])
@@ -114,7 +114,7 @@ def main():
         url = get_url(acms_conf)
         sonic_logger.log_info("CA_cert_downloader: main: url is "+url)
         # Check if dSMS URL is available
-        if uri_validator(url):
+        if url_validator(url):
             if "https://" in url and "region-dsms" not in url:
                 break
         # Poll url every 1 min
