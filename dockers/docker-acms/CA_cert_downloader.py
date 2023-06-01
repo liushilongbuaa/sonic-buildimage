@@ -9,6 +9,12 @@ import urllib, urllib2
 import json
 from sonic_py_common import logger
 import dSMS_config_modifier
+try:
+    # python2
+    from urlparse import urlparse
+except:
+    # python3
+    from urllib.parse import urlparse
 
 ROOT_CERT = "/acms/AME_ROOT_CERTIFICATE.pem"
 CERTS_PATH = "/etc/sonic/credentials/"
@@ -96,13 +102,21 @@ def get_url(conf_file):
         sonic_logger.log_error("CA_cert_downloader: Unable to get url " + str(e))
         return ""
 
+def uri_validator(url):
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc])
+    except:
+        return False
+
 def main():
     while True:
         url = get_url(acms_conf)
         sonic_logger.log_info("CA_cert_downloader: main: url is "+url)
         # Check if dSMS URL is available
-        if "https://" in url and "region-dsms" not in url:
-            break
+        if uri_validator(url):
+            if "https://" in url and "region-dsms" not in url:
+                break
         # Poll url every 1 min
         time.sleep(60)
 
