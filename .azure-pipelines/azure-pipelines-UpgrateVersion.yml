@@ -26,7 +26,8 @@ resources:
     ref: master
     endpoint: sonic-net
 
-pool: sonicbld
+pool:
+  vmImage: 'ubuntu-20.04'
 
 parameters:
 - name: 'jobFilters'
