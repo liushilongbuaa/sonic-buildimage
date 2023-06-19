@@ -64,7 +64,7 @@ stages:
         source: specific
         project: build
         pipeline: Azure.sonic-buildimage.upgrade-version
-        artifact: **
+        artifact: '**'
         runVersion: 'latestFromBranch'
         runBranch: 'refs/heads/master'
         path: $(Build.ArtifactStagingDirectory)/download
