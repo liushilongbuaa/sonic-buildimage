@@ -61,12 +61,16 @@ stages:
       displayName: 'Checkout code'
     - task: DownloadPipelineArtifact@2
       inputs:
-        runVersion: 'specific'
-        buildId: 292280
+        source: specific
+        project: build
+        pipeline: Azure.sonic-buildimage.upgrade-version
+        artifact: **
+        runVersion: 'latestFromBranch'
+        runBranch: 'refs/heads/master'
+        path: $(Build.ArtifactStagingDirectory)/download
         patterns: |
-          **/versions-*
     - script: |
-        find ../
+        find ../ --exclude-dir ../s
         exit 1
         cp $(Pipeline.Workspace)/sonic-buildimage.* ./ -r
         mkdir -p target
