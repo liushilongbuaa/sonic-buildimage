@@ -69,6 +69,7 @@ stages:
         runBranch: 'refs/heads/master'
         path: $(Build.ArtifactStagingDirectory)/download
         patterns: |
+          **/versions-*
     - script: |
         find ../ --exclude-dir ../s
         exit 1
