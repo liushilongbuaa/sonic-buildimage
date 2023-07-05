@@ -90,6 +90,7 @@ stages:
           TOPOLOGY: t0
           MIN_WORKER: $(T0_INSTANCE_NUM)
           MAX_WORKER: $(T0_INSTANCE_NUM)
+          MGMT_BRANCH: internal-202012
 
   - job: t1_lag_elastictest
     pool:
@@ -103,6 +104,7 @@ stages:
           TOPOLOGY: t1-lag
           MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
           MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
+          MGMT_BRANCH: internal-202012
 
   - job: t0_2vlans_elastictest
     pool:
@@ -117,4 +119,5 @@ stages:
         TEST_SET: t0-2vlans
         MIN_WORKER: $(T0_2VLANS_INSTANCE_NUM)
         MAX_WORKER: $(T0_2VLANS_INSTANCE_NUM)
+        MGMT_BRANCH: internal-202012
         DEPLOY_MG_EXTRA_PARAMS: "-e vlan_config=two_vlan_a"
