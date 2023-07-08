@@ -214,7 +214,7 @@ stages:
             set -ex
             make $(BUILD_OPTIONS) INCLUDE_RESTAPI=y SONIC_DPKG_CACHE_METHOD=wcache PASSWORD=$PASSWORD target/sonic-vs.bin target/sonic-vs.img.gz
             gzip -kd target/sonic-vs.img.gz
-            SONIC_RUN_CMDS="qemu-img convert target/sonic-vs.img -O vhdx -o subformat=dynamic target/sonic-vs.vhdx" make sonic-slave-run
+            SONIC_RUN_CMDS="qemu-img convert target/sonic-vs.img -O vhdx -o subformat=dynamic target/sonic-vs.vhdx" make $(BUILD_OPTIONS) sonic-slave-run
             rm target/sonic-vs.img
         - name: generic
           script: |
