@@ -91,6 +91,8 @@ stages:
           MIN_WORKER: $(T0_INSTANCE_NUM)
           MAX_WORKER: $(T0_INSTANCE_NUM)
           MGMT_BRANCH: internal-202012
+          STOP_ON_FAILURE: False
+          EXPECTED_RESULT: "SUCCESS"
 
   - job: t1_lag_elastictest
     pool:
@@ -105,6 +107,8 @@ stages:
           MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
           MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
           MGMT_BRANCH: internal-202012
+          STOP_ON_FAILURE: False
+          EXPECTED_RESULT: "SUCCESS"
 
   - job: t0_2vlans_elastictest
     pool:
@@ -121,3 +125,5 @@ stages:
         MAX_WORKER: $(T0_2VLANS_INSTANCE_NUM)
         MGMT_BRANCH: internal-202012
         DEPLOY_MG_EXTRA_PARAMS: "-e vlan_config=two_vlan_a"
+        STOP_ON_FAILURE: False
+        EXPECTED_RESULT: "SUCCESS"
