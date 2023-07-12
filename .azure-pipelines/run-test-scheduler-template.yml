@@ -109,7 +109,6 @@ parameters:
   type: string
   default: ""
 
-
 steps:
   - script: |
       set -e
