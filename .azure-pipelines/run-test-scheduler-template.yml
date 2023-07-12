@@ -31,7 +31,6 @@ parameters:
   default: ""
 
 - name: COMMON_EXTRA_PARAMS
-<<<<<<< HEAD
   type: string
   default: ""
 
