@@ -18,6 +18,11 @@ resources:
     name: sonic-net/sonic-buildimage
     ref: master
     endpoint: sonic-net
+  - repository: sonic-mgmt
+    type: github
+    name: sonic-net/sonic-mgmt
+    ref: master
+    endpoint: sonic-net
 
 name: $(TeamProject)_$(Build.DefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
@@ -85,12 +90,12 @@ stages:
     timeoutInMinutes: 240
     continueOnError: false
     steps:
-      - template: ../.azure-pipelines/run-test-scheduler-template.yml
+      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
         parameters:
           TOPOLOGY: t0
           MIN_WORKER: $(T0_INSTANCE_NUM)
           MAX_WORKER: $(T0_INSTANCE_NUM)
-          MGMT_BRANCH: internal-202012
+          MGMT_BRANCH: "internal-202012"
           STOP_ON_FAILURE: False
           EXPECTED_RESULT: "SUCCESS"
 
@@ -101,12 +106,12 @@ stages:
     timeoutInMinutes: 240
     continueOnError: false
     steps:
-      - template: ../.azure-pipelines/run-test-scheduler-template.yml
+      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
         parameters:
           TOPOLOGY: t1-lag
           MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
           MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
-          MGMT_BRANCH: internal-202012
+          MGMT_BRANCH: "internal-202012"
           STOP_ON_FAILURE: False
           EXPECTED_RESULT: "SUCCESS"
 
@@ -117,13 +122,13 @@ stages:
     timeoutInMinutes: 240
     continueOnError: false
     steps:
-    - template: ../.azure-pipelines/run-test-scheduler-template.yml
+    - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
       parameters:
         TOPOLOGY: t0
         TEST_SET: t0-2vlans
         MIN_WORKER: $(T0_2VLANS_INSTANCE_NUM)
         MAX_WORKER: $(T0_2VLANS_INSTANCE_NUM)
-        MGMT_BRANCH: internal-202012
+        MGMT_BRANCH: "internal-202012"
         DEPLOY_MG_EXTRA_PARAMS: "-e vlan_config=two_vlan_a"
         STOP_ON_FAILURE: False
         EXPECTED_RESULT: "SUCCESS"
