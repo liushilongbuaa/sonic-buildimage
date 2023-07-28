@@ -9,6 +9,11 @@ RUN pip2 install --upgrade 'pip<21'
 RUN apt-get purge -y python-pip
 RUN pip2 install 'setuptools==40.8.0'
 
+# The option --no-build-isolation can be removed when upgrading PyYAML to 6.0.1
+# The the PyYAML for python3 has already installed in the base image docker-config-engine
+RUN pip2 install wheel==0.37.1
+RUN pip2 install PyYAML==5.4.1 --no-build-isolation
+
 {% if docker_python2_layer_buster_debs.strip() -%}
 # Copy locally-built Debian package dependencies
 {{ copy_files("debs/", docker_python2_layer_buster_debs.split(' '), "/debs/") }}
