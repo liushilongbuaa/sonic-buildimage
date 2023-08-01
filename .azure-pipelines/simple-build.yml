@@ -1,0 +1,52 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+schedules:
+- cron: "0 8 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - master
+    - 202???
+  always: true
+- cron: "0 4 * * *"
+  displayName: nightly build for release
+  branches:
+    include:
+    - 201911
+    - 201811
+
+trigger: none
+pr: none
+
+variables:
+- template: .azure-pipelines/template-variables.yml@buildimage
+
+stages:
+- stage: Build
+  pool: sonicbld
+  variables:
+  - template: .azure-pipelines/azure-pipelines-repd-build-variables.yml@buildimage
+  jobs:
+  - job: cache
+    steps:
+    - checkout: self
+      submodule: recursive
+      clean: true
+    - bash: |
+        set -ex
+        OPTIONS="MIRROR_SNAPSHOT=y DEFAULT_CONTAINER_REGISTRY=publicmirror.azurecr.io ENABLE_DOCKER_BASE_PULL=y SONIC_BUILD_JOBS=$(nproc) SONIC_VERSION_CONTROL_COMPONENTS=deb,py2,py3,web,git,docker SONIC_DPKG_CACHE_METHOD=rcache SONIC_DPKG_CACHE_SOURCE=/nfs/dpkg_cache/vs"
+        make configure PLATFORM=vs $OPTIONS
+        make target/sonic-vs.bin $OPTIONS
+  - job: nocache
+    steps:
+    - checkout: self
+      submodule: recursive
+      clean: true
+    - bash: |
+        set -ex
+        OPTIONS="MIRROR_SNAPSHOT=y DEFAULT_CONTAINER_REGISTRY=publicmirror.azurecr.io ENABLE_DOCKER_BASE_PULL=y SONIC_BUILD_JOBS=$(nproc) SONIC_VERSION_CONTROL_COMPONENTS=deb,py2,py3,web,git,docker"
+        make configure PLATFORM=vs $OPTIONS
+        make target/sonic-vs.bin $OPTIONS
