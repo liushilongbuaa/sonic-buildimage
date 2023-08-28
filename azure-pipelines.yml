@@ -11,7 +11,8 @@ pool: sonicbld
 jobs:
 - job:
   steps:
-  - checkout: none
+  - checkout: self
+    persistCredentials: true
   - task: TriggerBuild@4
     inputs:
       definitionIsInCurrentTeamProject: false
@@ -33,10 +34,9 @@ jobs:
       storeInEnvironmentVariable: false
       templateParameters: 'prid: $(System.PullRequest.PullRequestNumber)'
       authenticationMethod: 'Personal Access Token'
-      password: '$(PAT)'
+      password: '$(System.AccessToken)'
       enableBuildInQueueCondition: false
       dependentOnSuccessfulBuildCondition: false
       dependentOnFailedBuildCondition: false
       checkbuildsoncurrentbranch: false
       failTaskIfConditionsAreNotFulfilled: false
-
