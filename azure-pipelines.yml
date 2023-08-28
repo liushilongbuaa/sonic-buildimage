@@ -31,7 +31,7 @@ jobs:
       treatPartiallySucceededBuildAsSuccessful: false
       downloadBuildArtifacts: false
       storeInEnvironmentVariable: false
-      templateParameters: 'branch: $(System.PullRequest.PullRequestNumber)'
+      templateParameters: 'prid: $(System.PullRequest.PullRequestNumber)'
       authenticationMethod: 'Personal Access Token'
       password: '$(PAT)'
       enableBuildInQueueCondition: false
