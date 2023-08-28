@@ -31,7 +31,7 @@ jobs:
       treatPartiallySucceededBuildAsSuccessful: false
       downloadBuildArtifacts: false
       storeInEnvironmentVariable: false
-      templateParameters: 'branch: $(System.PullRequest.PullRequestId)'
+      templateParameters: 'branch: $(System.PullRequest.PullRequestNumber)'
       authenticationMethod: 'Personal Access Token'
       password: '$(PAT)'
       enableBuildInQueueCondition: false
@@ -39,3 +39,4 @@ jobs:
       dependentOnFailedBuildCondition: false
       checkbuildsoncurrentbranch: false
       failTaskIfConditionsAreNotFulfilled: false
+
