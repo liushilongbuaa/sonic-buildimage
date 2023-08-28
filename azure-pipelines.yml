@@ -16,7 +16,7 @@ jobs:
     inputs:
       definitionIsInCurrentTeamProject: false
       tfsServer: 'https://dev.azure.com/msazure/'
-      teamProject: 'One'
+      teamProject: 'b32aa71e-8ed2-41b2-9d77-5bc261222004'
       buildDefinition: '329541'
       queueBuildForUserThatTriggeredBuild: true
       ignoreSslCertificateErrors: true
