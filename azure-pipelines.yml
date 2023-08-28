@@ -18,11 +18,12 @@ jobs:
       tfsServer: 'https://dev.azure.com/msazure/'
       teamProject: 'b32aa71e-8ed2-41b2-9d77-5bc261222004'
       buildDefinition: '329541'
-      queueBuildForUserThatTriggeredBuild: true
+      queueBuildForUserThatTriggeredBuild: false
       ignoreSslCertificateErrors: true
       useSameSourceVersion: false
       useCustomSourceVersion: false
-      useSameBranch: true
+      useSameBranch: false
+      branchToUse: 'test'
       waitForQueuedBuildsToFinish: true
       waitForQueuedBuildsToFinishRefreshTime: '60'
       failTaskIfBuildsNotSuccessful: true
