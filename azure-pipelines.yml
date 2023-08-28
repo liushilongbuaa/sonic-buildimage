@@ -18,12 +18,12 @@ jobs:
       tfsServer: 'https://dev.azure.com/msazure/'
       teamProject: 'One'
       buildDefinition: '329541'
+      queueBuildForUserThatTriggeredBuild: true
       ignoreSslCertificateErrors: true
-      useSameBranch: false
       branchToUse: 'internal'
       waitForQueuedBuildsToFinish: true
       waitForQueuedBuildsToFinishRefreshTime: '60'
       failTaskIfBuildsNotSuccessful: true
-      authenticationMethod: 'OAuth Token'
       templateParameters: 'branch: $(System.PullRequest.PullRequestId)'
-
+      authenticationMethod: 'Personal Access Token'
+      password: '$(PAT)'
