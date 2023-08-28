@@ -20,10 +20,21 @@ jobs:
       buildDefinition: '329541'
       queueBuildForUserThatTriggeredBuild: true
       ignoreSslCertificateErrors: true
-      branchToUse: 'internal'
+      useSameSourceVersion: false
+      useCustomSourceVersion: false
+      useSameBranch: true
       waitForQueuedBuildsToFinish: true
       waitForQueuedBuildsToFinishRefreshTime: '60'
       failTaskIfBuildsNotSuccessful: true
+      cancelBuildsIfAnyFails: false
+      treatPartiallySucceededBuildAsSuccessful: false
+      downloadBuildArtifacts: false
+      storeInEnvironmentVariable: false
       templateParameters: 'branch: $(System.PullRequest.PullRequestId)'
       authenticationMethod: 'Personal Access Token'
       password: '$(PAT)'
+      enableBuildInQueueCondition: false
+      dependentOnSuccessfulBuildCondition: false
+      dependentOnFailedBuildCondition: false
+      checkbuildsoncurrentbranch: false
+      failTaskIfConditionsAreNotFulfilled: false
