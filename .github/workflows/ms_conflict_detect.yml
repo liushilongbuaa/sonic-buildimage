@@ -58,19 +58,19 @@ jobs:
 
         git merge test && echo "No merge conflicts." && exit 0
 
-        listPR sonicbld/conflict_prefix/$pr_id-fix sonicbld/conflict_prefix/$pr_id-base 2>/dev/null | jq | tee tmp
+        listPR sonicbld/conflict_prefix/$pr_id-fix sonicbld/conflict_prefix/$pr_id-base 2>/dev/null | tee tmp | jq .count
         # if no this branch or branch is out of date.
         if [[ "$(git log ms/sonicbld/conflict_prefix/$pr_id-fix --format=%at -n 1)" < "$(git log test --format=%at -n 1)" ]];then
           echo "MS PR is out of date!"
           conflict_commit=$(git log $branch_int..HEAD --merge --format=%H)
           git merge --abort
           git merge $conflict_commit~
-          git push ms $branch_int:sonicbld/conflict_prefix/$pr_id-base
+          git push -f ms $branch_int:sonicbld/conflict_prefix/$pr_id-base
 
           git merge $conflict_commit || true
           git add .
           GIT_EDITOR=/bin/true git merge --continue
-          git push ms HEAD:sonicbld/conflict_prefix/$pr_id-fix
+          git push -f ms HEAD:sonicbld/conflict_prefix/$pr_id-fix
 
           # no active PR
           if [[ "$(cat tmp | jq -r .value[0].status)" != "active" ]];then
