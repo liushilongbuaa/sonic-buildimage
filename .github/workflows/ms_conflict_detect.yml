@@ -38,7 +38,7 @@ jobs:
         GITHUB_CONTEXT: ${{ toJson(github) }}
         AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
       run: |
-        set -ex
+        set -e
         branch_base=$(echo $GITHUB_CONTEXT | jq -r ".base_ref")
         pr_id=$(echo $GITHUB_CONTEXT | jq -r ".event.number")
 
@@ -93,4 +93,5 @@ jobs:
         ts_pr=$(git log test --format=%at -n 1)
         [[ $ts_base < $ts_pr ]] && echo "PR updated, but conflict resolving PR not updated." && exit 1
         [[ "$(cat tmp | jq -r .value[0].status)" != "completed" ]] && echo "Please resolve conflict and complete:" && echo "https://dev.azure.com/msazure/One/_git/Networking-acs-buildimage/pullrequest/$PRID" && exit 1
+        exit 0
 
