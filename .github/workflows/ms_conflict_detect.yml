@@ -58,7 +58,7 @@ jobs:
 
         git merge test && echo "No merge conflicts." && exit 0
 
-        listPR sonicbld/conflict_prefix/$pr_id-fix sonicbld/conflict_prefix/$pr_id-base 2>/dev/null | tee tmp | jq .count
+        PRID=$(listPR sonicbld/conflict_prefix/$pr_id-fix sonicbld/conflict_prefix/$pr_id-base 2>/dev/null | tee tmp | jq -r .value[0].pullRequestId)
         # if no this branch or branch is out of date.
         if [[ "$(git log ms/sonicbld/conflict_prefix/$pr_id-fix --format=%at -n 1)" < "$(git log test --format=%at -n 1)" ]];then
           echo "MS PR is out of date!"
@@ -78,9 +78,10 @@ jobs:
             echo "sonicbld/conflict_prefix/$pr_id-fix --> sonicbld/conflict_prefix/$pr_id-base"
             createPR sonicbld/conflict_prefix/$pr_id-fix sonicbld/conflict_prefix/$pr_id-base "Please approve and complete the PR after resolving conflict!!!" > tmp
             PRID=$(cat tmp | jq -r .pullRequestId)
+            echo "Please resolve conflict and complete:"
             echo "https://dev.azure.com/msazure/One/_git/Networking-acs-buildimage/pullrequest/$PRID"
           else
-            PRID=$(cat tmp | jq -r .value[0].pullRequestId)
+            echo "Please resolve conflict and complete:"
             echo "https://dev.azure.com/msazure/One/_git/Networking-acs-buildimage/pullrequest/$PRID"
           fi
           exit 1
@@ -90,5 +91,5 @@ jobs:
         ts_fix=$(git log ms/sonicbld/conflict_prefix/$pr_id-fix --format=%at -n 1)
         ts_pr=$(git log test --format=%at -n 1)
         [[ $ts_fix < $ts_pr ]] && echo "PR updated, but conflict resolving PR not updated." && exit 1
-        [[ "$(cat tmp | jq -r .value[0].status)" != "completed" ]] && echo "Please resolve conflict and complete: https://dev.azure.com/msazure/One/_git/Networking-acs-buildimage/pullrequest/$(cat tmp | jq -r .pullRequestId)" && exit 1
+        [[ "$(cat tmp | jq -r .value[0].status)" != "completed" ]] && echo "Please resolve conflict and complete:" && echo "https://dev.azure.com/msazure/One/_git/Networking-acs-buildimage/pullrequest/$PRID" && exit 1
 
