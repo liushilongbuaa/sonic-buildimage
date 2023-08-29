@@ -89,8 +89,8 @@ jobs:
         fi
 
 
-        ts_fix=$(git log ms/sonicbld/conflict_prefix/$pr_id-fix --format=%at -n 1)
+        ts_base=$(git log ms/sonicbld/conflict_prefix/$pr_id-base --format=%at -n 1)
         ts_pr=$(git log test --format=%at -n 1)
-        [[ $ts_fix < $ts_pr ]] && echo "PR updated, but conflict resolving PR not updated." && exit 1
+        [[ $ts_base < $ts_pr ]] && echo "PR updated, but conflict resolving PR not updated." && exit 1
         [[ "$(cat tmp | jq -r .value[0].status)" != "completed" ]] && echo "Please resolve conflict and complete:" && echo "https://dev.azure.com/msazure/One/_git/Networking-acs-buildimage/pullrequest/$PRID" && exit 1
 
