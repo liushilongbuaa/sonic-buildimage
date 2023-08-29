@@ -38,7 +38,7 @@ jobs:
         GITHUB_CONTEXT: ${{ toJson(github) }}
         AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
       run: |
-        set -e
+        set -ex
         branch_base=$(echo $GITHUB_CONTEXT | jq -r ".base_ref")
         pr_id=$(echo $GITHUB_CONTEXT | jq -r ".event.number")
 
