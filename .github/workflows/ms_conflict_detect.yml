@@ -76,7 +76,7 @@ jobs:
           if [[ "$(cat tmp | jq -r .value[0].status)" != "active" ]];then
             echo "No active MS PR found."
             echo "sonicbld/conflict_prefix/$pr_id-fix --> sonicbld/conflict_prefix/$pr_id-base"
-            createPR sonicbld/conflict_prefix/$pr_id-fix sonicbld/conflict_prefix/$pr_id-base > tmp
+            createPR sonicbld/conflict_prefix/$pr_id-fix sonicbld/conflict_prefix/$pr_id-base | tee tmp
             PRID=$(cat tmp | jq -r .pullRequestId)
             echo "https://dev.azure.com/msazure/One/_git/Networking-acs-buildimage/pullrequest/$PRID"
           else
