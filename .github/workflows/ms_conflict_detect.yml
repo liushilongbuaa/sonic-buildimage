@@ -60,7 +60,7 @@ jobs:
 
         PRID=$(listPR sonicbld/conflict_prefix/$pr_id-fix sonicbld/conflict_prefix/$pr_id-base 2>/dev/null | tee tmp | jq -r .value[0].pullRequestId)
         # if no this branch or branch is out of date.
-        if [[ "$(git log ms/sonicbld/conflict_prefix/$pr_id-fix --format=%at -n 1)" < "$(git log test --format=%at -n 1)" ]];then
+        if [[ "$(git log ms/sonicbld/conflict_prefix/$pr_id-base --format=%at -n 1)" < "$(git log test --format=%at -n 1)" ]];then
           echo "MS PR is out of date!"
           conflict_commit=$(git log $branch_int..HEAD --merge --format=%H)
           git merge --abort
