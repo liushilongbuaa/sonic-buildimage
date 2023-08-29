@@ -7,7 +7,7 @@ on:
 
 jobs:
   binskim:
-    if: github.repository_owner == 'sonic-net'
+    #if: github.repository_owner == 'sonic-net'
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
