@@ -57,8 +57,9 @@ jobs:
         git checkout -b $branch_int --track ms/$branch_int
 
         git merge test && echo "No merge conflicts." && exit 0
+        git merge --abort
 
-        listPR sonicbld/conflict_prefix/$pr_id-fix sonicbld/conflict_prefix/$pr_id-base | jq | tee tmp
+        listPR sonicbld/conflict_prefix/$pr_id-fix sonicbld/conflict_prefix/$pr_id-base 2>/dev/null | jq | tee tmp
 
         if [[ $(cat tmp | jq .count) != 1 ]];then
           echo "No conflict resolve PR found. from: sonicbld/conflict_prefix/$pr_id-fix. to: sonicbld/conflict_prefix/$pr_id-base"
