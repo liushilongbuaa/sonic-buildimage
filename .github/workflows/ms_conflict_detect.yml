@@ -67,9 +67,9 @@ jobs:
           git merge --abort
 
           git merge $conflict_commit~
-          git push origin $branch_int:sonicbld/conflict_prefix/$pr_id-base
+          git push ms $branch_int:sonicbld/conflict_prefix/$pr_id-base
 
-          git merge $conflict_commit
+          git merge $conflict_commit || true
           git add .
           GIT_EDITOR=/bin/true git merge --continue
 
