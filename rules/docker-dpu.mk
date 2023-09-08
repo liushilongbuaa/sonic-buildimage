@@ -1,0 +1,11 @@
+# docker image for load
+
+DOCKER_DPU_STEM = docker-dpu
+DOCKER_DPU = docker-dpu.tar
+
+$(DOCKER_DPU)_PACKAGE_NAME = dpu
+$(DOCKER_DPU)_PATH = boot/$(DOCKER_DPU)
+$(DOCKER_DPU)_MACHINE = vs
+$(DOCKER_DPU)_VERSION = 1.0.0
+
+SONIC_LOAD_ONLY_DOCKER_IMAGES += $(DOCKER_DPU)

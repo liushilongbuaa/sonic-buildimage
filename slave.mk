@@ -1312,7 +1312,12 @@ $(addprefix $(TARGET_PATH)/, $(SONIC_INSTALLERS)) : $(TARGET_PATH)/% : \
 				$(addprefix $($(docker:-dbg.gz=.gz)_PACKAGE_NAME)|,\
 				$(addprefix $($(docker:-dbg.gz=.gz)_PATH)|,\
 				$(addprefix $($(docker:-dbg.gz=.gz)_MACHINE)|,\
-				$(addprefix $(TARGET_PATH)/,$(addsuffix :$($(docker:-dbg.gz=.gz)_VERSION),$(docker)))))))"
+				$(addprefix $(TARGET_PATH)/,$(addsuffix :$($(docker:-dbg.gz=.gz)_VERSION),$(docker))))))) \
+				$(foreach docker, $(SONIC_LOAD_ONLY_DOCKER_IMAGES),\
+				$(addprefix $($(docker)_PACKAGE_NAME)|,\
+				$(addprefix $($(docker)_PATH)|,\
+				$(addprefix $($(docker)_MACHINE)|,\
+				$(addsuffix :$($(docker)_VERSION),$(docker))))))"
 	export sonic_packages="$(foreach package, $(SONIC_PACKAGES),\
 				$(addsuffix |$($(package)_DEFAULT_FEATURE_STATE_ENABLED),\
 				$(addsuffix |$($(package)_DEFAULT_FEATURE_OWNER),\
