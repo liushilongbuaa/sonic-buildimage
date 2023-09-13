@@ -1,0 +1,33 @@
+# when detect conflicts, update ADO and send alert
+# then snapshot the commit to ms repo and create a PR in ms repo
+# then resolve the conflict in ms PR.
+# after that, rerun the github action, it will pass
+name: MSConflictDetect
+on:
+  pull_request_target:
+    branches:
+      - 'master'
+      - '202[0-9][0-9][0-9]'
+
+jobs:
+  MSConflictDetect:
+    #if: github.repository_owner == 'sonic-net'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Debug
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+        USER: mssonicbld
+        PAT: ${{ secrets.TOKEN }}
+        MSAZURE_TOKEN: ${{ secrets.MSAZURE_PAT }}
+        MSSONIC_TOKEN: ${{ secrets.MSSONIC_PAT }}
+      run: |
+        set -ex
+        URL=$(echo $GITHUB_CONTEXT | jq -r .event.pull_request._links.html.href)
+
+        curl "https://$USER:$PAT@raw.githubusercontent.com/Azure/sonic-pipelines-internal/main/azure-pipelines/ms_conflict_detect.sh" -o ms_conflict_detect.sh
+        bash ms_conflict_detect.sh $MSAZURE_TOKEN $MSSONIC_TOKEN $PAT $URL
+
