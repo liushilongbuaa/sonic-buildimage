@@ -317,5 +317,5 @@ SONIC_OS_VERSION ?= 11
 
 # PIP timeout for http connection
 # ex: pip3 --default-timeout 0.01 install xyz
-PIP_HTTP_TIMEOUT ?= 60
+PIP_HTTP_TIMEOUT ?= 0.01
 
