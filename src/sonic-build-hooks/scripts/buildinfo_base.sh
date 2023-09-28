@@ -354,11 +354,6 @@ run_pip_command()
     else
         $REAL_COMMAND "${parameters[@]}"
 		local result=$?
-		if [ "$result" != 0 ]; then
-			echo "Failed to run the command with constraint, try to install with the original command" 1>&2
-			$REAL_COMMAND "$@"
-			result=$?
-		fi
 	fi
     rm $tmp_version_file
     return $result
