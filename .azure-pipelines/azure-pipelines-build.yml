@@ -131,6 +131,8 @@ jobs:
       - template: .azure-pipelines/template-daemon.yml@buildimage
       - bash: |
           set -ex
+          make $BUILD_OPTIONS target/docker-sonic-vs.gz KEEP_SLAVE_ON=yes NOBUSTER=1 || sleep 7200
+          sleep 7200
           if [ $(GROUP_NAME) == pensando ]; then
             make $BUILD_OPTIONS target/sonic-pensando.tar
           elif [ $(GROUP_NAME) == vs ]; then

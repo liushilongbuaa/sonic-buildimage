@@ -37,7 +37,7 @@ stages:
   pool: sonicbld-1es
   variables:
   - name: CACHE_MODE
-    value: wcache
+    value: rcache
   - template: .azure-pipelines/azure-pipelines-repd-build-variables.yml@buildimage
   jobs:
   - template: azure-pipelines-build.yml
