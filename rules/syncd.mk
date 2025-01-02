@@ -18,7 +18,7 @@ $(eval $(call add_derived_package,$(SYNCD),$(SYNCD_RPC)))
 
 # Inject libthrift build dependency for RPC build
 $(SYNCD)_DEPENDS += $(LIBSWSSCOMMON_DEV) $(LIBTHRIFT_DEV)
-$(SYNCD)_DEB_BUILD_PROFILES += rpc
+
 endif
 
 SYNCD_DBGSYM = syncd-dbgsym_1.0.0_$(CONFIGURED_ARCH).deb
