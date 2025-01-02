@@ -30,6 +30,7 @@ COPY ["dpkg_01_drop", "/etc/dpkg/dpkg.cfg.d/01_drop"]
 COPY ["sources.list.{{ CONFIGURED_ARCH }}", "/etc/apt/sources.list"]
 COPY ["no_install_recommend_suggest", "/etc/apt/apt.conf.d"]
 COPY ["no-check-valid-until", "/etc/apt/apt.conf.d"]
+COPY ["apt-retries-count", "/etc/apt/apt.conf.d"]
 
 # Update apt cache and
 # pre-install fundamental packages
@@ -90,7 +91,7 @@ RUN pip install supervisor>=3.4.0
 # Add support for supervisord to handle startup dependencies
 RUN pip install supervisord-dependent-startup==1.4.0
 
-RUN mkdir -p /etc/supervisor /var/log/supervisor
+RUN mkdir -p /var/log/supervisor /etc/supervisor/conf.d
 
 RUN apt-get -y purge   \
     exim4              \
